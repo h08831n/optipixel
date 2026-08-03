@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Main P Body Gradient -->
+    <linearGradient id="optiGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="35%" stop-color="#0072FF" />
+      <stop offset="70%" stop-color="#7000FF" />
+      <stop offset="100%" stop-color="#D946EF" />
+    </linearGradient>
+
+    <!-- Cyan Pixel Gradient -->
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <!-- Purple Pixel Gradient -->
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(10, 10)">
+    <!-- Floating Dispersed Pixel Blocks on Left -->
+    <rect x="110" y="105" width="22" height="22" rx="3" fill="#38BDF8" />
+    <rect x="120" y="155" width="24" height="24" rx="3" fill="#0284C7" />
+    <rect x="95"  y="205" width="24" height="24" rx="3" fill="#818CF8" />
+    <rect x="120" y="245" width="26" height="26" rx="3" fill="#A855F7" />
+    <rect x="125" y="295" width="24" height="24" rx="3" fill="#C084FC" />
+    <rect x="130" y="335" width="22" height="22" rx="3" fill="#E879F9" />
+
+    <!-- Secondary Inner Pixel Matrix Layer -->
+    <rect x="150" y="130" width="28" height="28" rx="3" fill="#0284C7" />
+    <rect x="150" y="195" width="28" height="28" rx="3" fill="#1E1B4B" />
+    <rect x="155" y="250" width="28" height="28" rx="3" fill="#4C1D95" />
+    <rect x="155" y="310" width="28" height="28" rx="3" fill="#581C87" />
+
+    <!-- Main Pixelated Stem Edge Overlay Blocks -->
+    <rect x="180" y="125" width="32" height="32" rx="2" fill="#0F172A" />
+    <rect x="180" y="190" width="32" height="32" rx="2" fill="#0F172A" />
+    <rect x="180" y="255" width="32" height="32" rx="2" fill="#0F172A" opacity="0.85" />
+    <rect x="180" y="315" width="32" height="32" rx="2" fill="#581C87" />
+
+    <!-- Main P Smooth Shape -->
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M 190 95
+         H 330
+         C 395 95 440 135 440 195
+         C 440 255 395 295 330 295
+         H 255
+         V 395
+         C 255 410 245 420 230 420
+         H 205
+         C 190 420 180 410 180 395
+         V 95 Z
+         M 255 150
+         H 320
+         C 345 150 365 170 365 195
+         C 365 220 345 240 320 240
+         H 255
+         V 150 Z"
+      fill="url(#optiGradient)"
+    />
+
+    <!-- Cutout Dark Accent inside the P Loop for Depth -->
+    <path
+      d="M 260 155
+         H 320
+         C 342 155 360 173 360 195
+         C 360 217 342 235 320 235
+         H 260
+         V 155 Z"
+      fill="#0F172A"
+    />
+  </g>
+</svg>

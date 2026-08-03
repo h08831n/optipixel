@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LanguageCode } from "../types";
 import { TranslationSchema, translations } from "../i18n";
 import { ExternalLink, Heart, Bug, Tag, Copy, Check, Github, Sparkles, HelpCircle } from "lucide-react";
+import { Logo } from "./Logo";
 
 interface AboutPageProps {
   lang: LanguageCode;
@@ -41,8 +42,8 @@ export const AboutPage: React.FC<AboutPageProps> = ({ lang }) => {
     <div className="max-w-4xl mx-auto space-y-8 py-6">
       {/* App Header Card */}
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-8 shadow-sm text-center space-y-4">
-        <div className="w-20 h-20 rounded-2xl bg-indigo-600 text-white font-black text-4xl flex items-center justify-center mx-auto shadow-xl shadow-indigo-600/30">
-          O
+        <div className="flex justify-center">
+          <Logo size={80} className="w-20 h-20 drop-shadow-md" />
         </div>
 
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{t.appName}</h1>

@@ -2,6 +2,7 @@ import React from "react";
 import { Zap, RefreshCw, Search, History, Settings, Info, Code, Globe, Moon, Sun, Heart } from "lucide-react";
 import { LanguageCode } from "../types";
 import { TranslationSchema, translations } from "../i18n";
+import { Logo } from "./Logo";
 
 interface HeaderProps {
   activeTab: string;
@@ -38,9 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <div className="flex items-center space-x-3 rtl:space-x-reverse cursor-pointer" onClick={() => setActiveTab("optimize")}>
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-lg shadow-indigo-500/30">
-              O
-            </div>
+            <Logo size={36} className="w-9 h-9 drop-shadow" />
             <div>
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <span className="font-extrabold text-lg tracking-tight text-white">{t.appName}</span>
