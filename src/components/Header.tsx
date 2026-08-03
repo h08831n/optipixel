@@ -1,5 +1,5 @@
 import React from "react";
-import { Zap, RefreshCw, Search, History, Settings, Info, Code, Globe, Moon, Sun } from "lucide-react";
+import { Zap, RefreshCw, Search, History, Settings, Info, Code, Globe, Moon, Sun, Heart } from "lucide-react";
 import { LanguageCode } from "../types";
 import { TranslationSchema, translations } from "../i18n";
 
@@ -74,6 +74,16 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Controls */}
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            {/* Donate Quick Link */}
+            <button
+              onClick={() => setActiveTab("about")}
+              className="hidden lg:flex items-center space-x-1 rtl:space-x-reverse bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all"
+              title={t.donate}
+            >
+              <Heart className="w-3.5 h-3.5 fill-current text-amber-400" />
+              <span>{t.donate}</span>
+            </button>
+
             {/* Language Selector */}
             <div className="relative flex items-center">
               <Globe className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 rtl:right-2.5 pointer-events-none" />

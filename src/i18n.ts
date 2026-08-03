@@ -41,6 +41,11 @@ export interface TranslationSchema {
   skipped: string;
   failed: string;
   diagnosticsTitle: string;
+  donate: string;
+  reportBug: string;
+  releaseGuide: string;
+  copyWallet: string;
+  walletCopied: string;
 }
 
 export const translations: Record<LanguageCode, TranslationSchema> = {
@@ -84,7 +89,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "Processed",
     skipped: "Skipped",
     failed: "Failed",
-    diagnosticsTitle: "ImageMagick Engine Diagnostics"
+    diagnosticsTitle: "ImageMagick Engine Diagnostics",
+    donate: "Donate",
+    reportBug: "Report Bug",
+    releaseGuide: "Release Guide",
+    copyWallet: "Copy Wallet Address",
+    walletCopied: "Address Copied!"
   },
   fa: {
     appName: "OptiPixel",
@@ -126,7 +136,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "پردازش شده",
     skipped: "صرف‌نظر شده",
     failed: "ناموفق",
-    diagnosticsTitle: "وضعیت موتور ImageMagick"
+    diagnosticsTitle: "وضعیت موتور ImageMagick",
+    donate: "حمایت مالی",
+    reportBug: "گزارش باگ",
+    releaseGuide: "راهنمای انتشار",
+    copyWallet: "کپی آدرس کیف پول",
+    walletCopied: "آدرس کپی شد!"
   },
   de: {
     appName: "OptiPixel",
@@ -168,7 +183,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "Verarbeitet",
     skipped: "Übersprungen",
     failed: "Fehlgeschlagen",
-    diagnosticsTitle: "ImageMagick Status"
+    diagnosticsTitle: "ImageMagick Status",
+    donate: "Spenden",
+    reportBug: "Fehler melden",
+    releaseGuide: "Release-Anleitung",
+    copyWallet: "Wallet-Adresse kopieren",
+    walletCopied: "Adresse kopiert!"
   },
   tr: {
     appName: "OptiPixel",
@@ -210,7 +230,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "İşlenen",
     skipped: "Atlanan",
     failed: "Başarısız",
-    diagnosticsTitle: "ImageMagick Durumu"
+    diagnosticsTitle: "ImageMagick Durumu",
+    donate: "Bağış Yap",
+    reportBug: "Hata Bildir",
+    releaseGuide: "Sürüm Rehberi",
+    copyWallet: "Cüzdan Adresini Kopyala",
+    walletCopied: "Adres Kopyalandı!"
   },
   ar: {
     appName: "OptiPixel",
@@ -252,7 +277,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "تمت المعالجة",
     skipped: "تم التخطي",
     failed: "فشلت",
-    diagnosticsTitle: "تشخيصات محرك ImageMagick"
+    diagnosticsTitle: "تشخيصات محرك ImageMagick",
+    donate: "تبرع",
+    reportBug: "الإبلاغ عن خطأ",
+    releaseGuide: "دليل الإصدارات",
+    copyWallet: "نسخ عنوان المحفظة",
+    walletCopied: "تم نسخ العنوان!"
   },
   fr: {
     appName: "OptiPixel",
@@ -294,7 +324,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "Traités",
     skipped: "Ignorés",
     failed: "Échoués",
-    diagnosticsTitle: "Diagnostics ImageMagick"
+    diagnosticsTitle: "Diagnostics ImageMagick",
+    donate: "Faire un don",
+    reportBug: "Signaler un bug",
+    releaseGuide: "Guide des versions",
+    copyWallet: "Copier l'adresse du portefeuille",
+    walletCopied: "Adresse copiée !"
   },
   es: {
     appName: "OptiPixel",
@@ -336,7 +371,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "Procesados",
     skipped: "Omitidos",
     failed: "Fallidos",
-    diagnosticsTitle: "Diagnóstico de ImageMagick"
+    diagnosticsTitle: "Diagnóstico de ImageMagick",
+    donate: "Donar",
+    reportBug: "Reportar un error",
+    releaseGuide: "Guía de versiones",
+    copyWallet: "Copiar dirección de billetera",
+    walletCopied: "¡Dirección copiada!"
   },
   ru: {
     appName: "OptiPixel",
@@ -378,7 +418,12 @@ export const translations: Record<LanguageCode, TranslationSchema> = {
     processed: "Обработано",
     skipped: "Пропущено",
     failed: "Ошибок",
-    diagnosticsTitle: "Диагностика ImageMagick"
+    diagnosticsTitle: "Диагностика ImageMagick",
+    donate: "Пожертвовать",
+    reportBug: "Сообщить об ошибке",
+    releaseGuide: "Руководство по релизу",
+    copyWallet: "Скопировать адрес кошелька",
+    walletCopied: "Адрес скопирован!"
   }
 };
 

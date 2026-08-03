@@ -77,6 +77,7 @@ async function startServer() {
       "LICENSE",
       "CHANGELOG.md",
       "README.md",
+      "README.fa.md",
       "build.ps1",
       "run.ps1",
       "installer/OptiPixel.iss",

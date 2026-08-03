@@ -1,111 +1,70 @@
-# OptiPixel
+# OptiPixel 🖼️⚡
 
-**Web Image Optimizer & Converter**
+**OptiPixel** is a high-performance, cross-platform image optimization, batch conversion, and SEO media auditing desktop application built with Python (PySide6) and ImageMagick 7 CLI engine, as well as a modern web interface.
 
-![OptiPixel Banner](assets/images/banner.png)
+[![GitHub Release](https://img.shields.io/github/v/release/h08831n/OptiPixel)](https://github.com/h08831n/OptiPixel/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
 
-OptiPixel is a high-performance Windows desktop application and web solution for optimizing, compressing, and converting web images in bulk. It is specifically designed for website owners, WordPress administrators, digital creators, and media production teams who handle large image libraries.
+Languages: [English](README.md) | [فارسی](README.fa.md)
 
 ---
 
 ## 🌟 Key Features
 
-- **⚡ ImageMagick 7.x Integration:** Uses native `magick` CLI for high-speed, lossy and lossless image compression.
-- **🖼️ Comprehensive Format Support:** WebP, AVIF, HEIC, JPEG XL, JPEG, PNG, TIFF, BMP, and GIF.
-- **📂 Batch & Recursive Processing:** Process thousands of images across complex subfolder hierarchies with zero UI freezing.
-- **🛡️ Atomic Safety Engine:** Processes to temporary files first, validates dimension and size, and preserves backups before overwriting originals.
-- **⚙️ Threshold Filtering:** Set file size criteria (e.g., process only images > 400 KB) and automatically keep originals if output is larger.
-- **📐 Smart Resizing & Metadata:** Constrain maximum dimensions maintaining aspect ratio (without upscaling) and strip EXIF metadata safely.
-- **🌍 Multilingual LTR & RTL Support:** Fully localized in English, فارسی, Deutsch, Türkçe, العربية, Français, Español, and Русский.
-- **📊 SEO Image Audit & Reports:** Scan folders for heavy images without modifying files, and export detailed CSV / JSON reports.
-- **💻 Desktop & Web Preview:** Build standalone Windows `.exe` using PyInstaller and Inno Setup installer.
+- **⚡ Batch Image Optimization**: Lossy and Lossless WebP, AVIF, JPEG, PNG, TIFF, and BMP compression.
+- **🎯 Smart Threshold Filtering**: Automatically skip images smaller than a configurable threshold (e.g. 400 KB).
+- **🛡️ Quality Preservation Guard**: Keeps original files if compressed output happens to be larger.
+- **📐 Smart Resizing**: Constrain maximum width and height while maintaining aspect ratio.
+- **🏷️ Metadata Control**: Strip unnecessary EXIF data while preserving correct orientation.
+- **🔍 SEO & Core Web Vitals Audit**: Read-only directory scanner that highlights heavy web images.
+- **💼 Multiple Output Strategies**: Save to a new directory, replace originals with automatic backups, or save alongside source files.
+- **❤️ Crypto Donation Support**: Support open-source development directly via TON network crypto transfers.
 
 ---
 
-## 🚀 Quick Start (Development)
+## 📦 How to Build & Publish Releases
 
-### Prerequisites
+### 1. Prerequisites
+- Python 3.10+
+- ImageMagick 7 (`magick` CLI in PATH)
+- Inno Setup 6 (for Windows installer `.exe` creation)
 
-- Python 3.12+
-- ImageMagick 7.x (available via `magick` command in system PATH or custom location)
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/ahaninja/OptiPixel.git
-cd OptiPixel
-
-# Create and activate virtual environment
-python -m venv .venv
-# On Windows PowerShell:
-.\.venv\Scripts\Activate.ps1
-
-# Install dependencies
-pip install -r requirements-dev.txt
-```
-
-### Running the Application
-
-```bash
-# Run PySide6 Desktop GUI
-python -m app.main
-
-# Run Web Preview Server
-npm run dev
-```
-
-### Running Tests
-
-```bash
-pytest
-```
-
----
-
-## 📦 Building Standalone Executable & Installer
-
-### Build PyInstaller Executable
-
+### 2. Local Build Script (Windows)
+Run PowerShell build script:
 ```powershell
 .\build.ps1
 ```
-This script compiles the application using PyInstaller into `dist/OptiPixel/`.
+This compiles `app/main.py` into a single standalone executable using PyInstaller and packages it into `OptiPixel-Installer.exe` using Inno Setup (`installer/OptiPixel.iss`).
 
-### Generate Windows Installer (Inno Setup)
-
-Requires Inno Setup 6+ (`ISCC.exe`):
-
-```powershell
-& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\OptiPixel.iss
-```
-
-Output installer: `Output/OptiPixel-Setup-0.1.0.exe`
+### 3. Creating a GitHub Release
+1. Tag your repository with the version number:
+   ```bash
+   git tag -a v0.1.0 -m "Release v0.1.0"
+   git push origin v0.1.0
+   ```
+2. Go to `https://github.com/h08831n/OptiPixel/releases/new`
+3. Select `v0.1.0` tag, enter Release Title and Changelog notes.
+4. Upload `OptiPixel-Installer.exe` and `OptiPixel-Standalone.zip` from `dist/` build directory.
+5. Publish Release!
 
 ---
 
-## 🏛️ Project Architecture
+## ☕ Support & Crypto Donation
 
-```
-OptiPixel/
-├── app/
-│   ├── core/         # Processing engine, optimizer, converter, scanner, output & backup managers
-│   ├── workers/      # QThreadPool / QRunnable worker threads & task pools
-│   ├── ui/           # PySide6 main window, pages, widgets (LTR/RTL responsive)
-│   ├── services/     # ImageMagick CLI detection, settings, history, GitHub updates
-│   ├── config/       # Constants, settings schemas, presets, defaults
-│   ├── i18n/         # Multilingual translation files (EN, FA, DE, TR, AR, FR, ES, RU)
-│   └── utils/        # File, path, size, and logging utilities
-├── installer/        # Inno Setup script (OptiPixel.iss)
-├── tests/            # PyTest suite for scanner, optimizer, converter, output manager
-├── .github/          # CI/CD workflows for automated release build
-└── build.ps1         # PowerShell build script
-```
+If OptiPixel saved you bandwidth or time, consider supporting development:
+
+- **TON / USDT (TON Network) Wallet Address**:
+  `UQBHs-6YLo4igSTy470tsyH7g5myvCTAxz6C4e7GothWY9J3`
+
+---
+
+## 🐛 Bug Reports & Feedback
+
+Found an issue or have a feature request?
+Submit a report on GitHub Issues: [https://github.com/h08831n/OptiPixel/issues](https://github.com/h08831n/OptiPixel/issues)
 
 ---
 
 ## 📜 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-**Publisher:** [Ahaninja](https://ahaninja.com)
+MIT License - Developed by **h08831n**

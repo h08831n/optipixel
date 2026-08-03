@@ -53,8 +53,8 @@ export const OptimizePage: React.FC<OptimizePageProps> = ({ lang, onAddHistoryEn
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    const newItems: ImageItem[] = files.map((f, idx) => ({
+    const files: File[] = Array.from(e.target.files);
+    const newItems: ImageItem[] = files.map((f: File, idx: number) => ({
       id: `uploaded-${Date.now()}-${idx}`,
       name: f.name,
       path: `/uploads/${f.name}`,
