@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QSlider, QLabel, QSpinBox
 from PySide6.QtCore import Qt
+from app.i18n.i18n_manager import tr
 
 class QualityControlWidget(QWidget):
     def __init__(self, default_value: int = 82, parent=None):
@@ -7,7 +8,8 @@ class QualityControlWidget(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        layout.addWidget(QLabel("Quality:"))
+        self.lbl_quality = QLabel(tr("label.quality", "Quality:"))
+        layout.addWidget(self.lbl_quality)
 
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(1, 100)
@@ -22,6 +24,9 @@ class QualityControlWidget(QWidget):
 
         layout.addWidget(self.slider)
         layout.addWidget(self.spin)
+
+    def retranslate_ui(self):
+        self.lbl_quality.setText(tr("label.quality", "Quality:"))
 
     def value(self) -> int:
         return self.spin.value()

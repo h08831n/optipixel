@@ -1,5 +1,5 @@
 import React from "react";
-import { Zap, RefreshCw, Search, History, Settings, Info, Code, Globe, Moon, Sun, Heart } from "lucide-react";
+import { Zap, RefreshCw, Search, History, Settings, Info, Globe, Moon, Sun, Heart } from "lucide-react";
 import { LanguageCode } from "../types";
 import { TranslationSchema, translations } from "../i18n";
 import { Logo } from "./Logo";
@@ -29,7 +29,6 @@ export const Header: React.FC<HeaderProps> = ({
     { id: "audit", label: t.audit, icon: Search },
     { id: "history", label: t.history, icon: History },
     { id: "settings", label: t.settings, icon: Settings },
-    { id: "code", label: t.codeExplorer, icon: Code },
     { id: "about", label: t.about, icon: Info }
   ];
 

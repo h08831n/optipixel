@@ -5,7 +5,6 @@ import { ConvertPage } from "./components/ConvertPage";
 import { AuditPage } from "./components/AuditPage";
 import { HistoryPage } from "./components/HistoryPage";
 import { SettingsPage } from "./components/SettingsPage";
-import { CodeExplorerModal } from "./components/CodeExplorerModal";
 import { AboutPage } from "./components/AboutPage";
 import { JobHistoryEntry, LanguageCode } from "./types";
 import { isRtlLanguage } from "./i18n";
@@ -60,7 +59,6 @@ export default function App() {
           <HistoryPage history={history} onClearHistory={clearHistory} lang={lang} />
         )}
         {activeTab === "settings" && <SettingsPage lang={lang} />}
-        {activeTab === "code" && <CodeExplorerModal />}
         {activeTab === "about" && <AboutPage lang={lang} />}
       </main>
     </div>

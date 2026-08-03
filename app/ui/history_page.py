@@ -3,38 +3,58 @@ from PySide6.QtWidgets import (
     QTableWidgetItem, QHeaderView
 )
 from app.services.history_service import HistoryService
+from app.i18n.i18n_manager import tr, I18nManager
 
 class HistoryPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.history_service = HistoryService()
         self.init_ui()
+        I18nManager.instance().language_changed.connect(self.retranslate_ui)
 
     def init_ui(self):
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(16)
 
         top_bar = QHBoxLayout()
-        title = QLabel("Optimization Job History")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #2D3748;")
+        self.title = QLabel(tr("history.title", "Optimization Job History"))
+        self.title.setStyleSheet("font-size: 18px; font-weight: bold;")
 
-        btn_refresh = QPushButton("Refresh")
-        btn_refresh.clicked.connect(self.load_history)
+        self.btn_refresh = QPushButton(tr("history.refresh", "Refresh"))
+        self.btn_refresh.clicked.connect(self.load_history)
 
-        btn_clear = QPushButton("Clear History")
-        btn_clear.clicked.connect(self.clear_history)
+        self.btn_clear = QPushButton(tr("history.clear", "Clear History"))
+        self.btn_clear.clicked.connect(self.clear_history)
 
-        top_bar.addWidget(title)
+        top_bar.addWidget(self.title)
         top_bar.addStretch()
-        top_bar.addWidget(btn_refresh)
-        top_bar.addWidget(btn_clear)
+        top_bar.addWidget(self.btn_refresh)
+        top_bar.addWidget(self.btn_clear)
         layout.addLayout(top_bar)
 
         self.table = QTableWidget(0, 6)
-        self.table.setHorizontalHeaderLabels(["ID", "Timestamp", "Operation", "Processed Files", "Saved Space", "Duration"])
+        self.retranslate_headers()
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.table)
 
         self.load_history()
+
+    def retranslate_headers(self):
+        self.table.setHorizontalHeaderLabels([
+            tr("history.col_id", "ID"),
+            tr("history.col_timestamp", "Timestamp"),
+            tr("history.col_operation", "Operation"),
+            tr("history.col_files", "Processed Files"),
+            tr("history.col_saved", "Saved Space"),
+            tr("history.col_duration", "Duration")
+        ])
+
+    def retranslate_ui(self):
+        self.title.setText(tr("history.title", "Optimization Job History"))
+        self.btn_refresh.setText(tr("history.refresh", "Refresh"))
+        self.btn_clear.setText(tr("history.clear", "Clear History"))
+        self.retranslate_headers()
 
     def load_history(self):
         history = self.history_service.get_history()
