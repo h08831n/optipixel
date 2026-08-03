@@ -10,6 +10,9 @@ if TYPE_CHECKING:
 from app.core.formats import ImageFormat
 from app.core.image_info import ImageInfo
 from app.core.exceptions import ImageProcessingError, UnsupportedFormatError
+from app.utils.logging_utils import get_logger
+
+logger = get_logger()
 
 try:
     from PIL import Image as PILImage, ImageOps
@@ -137,7 +140,9 @@ class ImageOptimizer:
         target_format: ImageFormat,
         settings: Dict[str, Any]
     ) -> Tuple[bool, Path, str]:
+        logger.debug(f"Starting optimization for file: {input_path} -> target_format: {target_format.value}")
         if not input_path.exists():
+            logger.error(f"Input file does not exist: {input_path}")
             return False, input_path, "File does not exist"
 
         # Check threshold
@@ -147,7 +152,9 @@ class ImageOptimizer:
         if settings.get("threshold_enabled", True):
             min_threshold_kb = settings.get("size_threshold_kb", 400)
             if src_size_kb <= min_threshold_kb:
-                return False, input_path, f"Skipped: File size ({src_size_kb:.1f} KB) <= threshold ({min_threshold_kb} KB)"
+                msg = f"Skipped: File size ({src_size_kb:.1f} KB) <= threshold ({min_threshold_kb} KB)"
+                logger.info(f"{input_path.name}: {msg}")
+                return False, input_path, msg
 
         # Create temporary file for processing
         target_ext = target_format.to_extension() if target_format != ImageFormat.ORIGINAL else input_path.suffix
@@ -161,32 +168,43 @@ class ImageOptimizer:
         im_error_msg = ""
         if self.im_service.is_available():
             args = self.build_command_args(input_path, temp_output, actual_format, settings)
+            logger.debug(f"Executing ImageMagick with args: {args}")
             try:
                 success, stdout, stderr = self.im_service.execute(args)
                 if success and temp_output.exists() and temp_output.stat().st_size > 0:
                     opt_size_bytes = temp_output.stat().st_size
                     if settings.get("keep_original_if_larger", True) and opt_size_bytes >= src_size_bytes:
                         temp_output.unlink()
-                        return False, input_path, f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
+                        msg = f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
+                        logger.info(f"{input_path.name}: {msg}")
+                        return False, input_path, msg
+                    logger.info(f"ImageMagick successfully optimized {input_path.name} -> {opt_size_bytes/1024:.1f} KB")
                     return True, temp_output, "Successfully optimized"
                 else:
                     im_error_msg = stderr or "Empty output"
+                    logger.warning(f"ImageMagick execution failed for {input_path.name}: {im_error_msg}")
             except Exception as e:
                 im_error_msg = str(e)
+                logger.warning(f"ImageMagick exception for {input_path.name}: {im_error_msg}")
 
         # 2. Fallback to Pillow
+        logger.info(f"Using Pillow fallback for {input_path.name}...")
         pil_ok, pil_msg = self._optimize_with_pillow(input_path, temp_output, actual_format, settings)
         if pil_ok:
             opt_size_bytes = temp_output.stat().st_size
             if settings.get("keep_original_if_larger", True) and opt_size_bytes >= src_size_bytes:
                 if temp_output.exists():
                     temp_output.unlink()
-                return False, input_path, f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
+                msg = f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
+                logger.info(f"{input_path.name}: {msg}")
+                return False, input_path, msg
+            logger.info(f"Pillow successfully processed {input_path.name} -> {opt_size_bytes/1024:.1f} KB")
             return True, temp_output, "Successfully optimized (Pillow engine)"
 
         if temp_output.exists():
             temp_output.unlink()
 
         err_detail = im_error_msg or pil_msg or "Unknown error"
+        logger.error(f"Processing failed for {input_path.name}: {err_detail}")
         return False, input_path, f"Processing failed: {err_detail}"
 

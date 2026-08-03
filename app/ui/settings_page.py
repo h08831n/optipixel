@@ -6,6 +6,8 @@ from PySide6.QtCore import Signal
 from app.services.imagemagick_service import ImageMagickService
 from app.services.settings_service import SettingsService
 from app.i18n.i18n_manager import tr, I18nManager
+from app.ui.widgets.log_dialog import LogViewerDialog
+from app.utils.logging_utils import LOG_FILE
 
 class SettingsPage(QWidget):
     theme_changed = Signal(str)
@@ -40,6 +42,21 @@ class SettingsPage(QWidget):
         im_box.addWidget(self.lbl_ver)
         im_box.addWidget(self.lbl_fmts)
         layout.addWidget(self.group_im)
+
+        # Developer & Debug Logs
+        self.group_log = QGroupBox(tr("settings.dev_logs", "Developer & Debug Logging"))
+        log_box = QVBoxLayout(self.group_log)
+        self.lbl_log_file = QLabel(f"<b>Log File:</b> {LOG_FILE}")
+        self.lbl_log_file.setWordWrap(True)
+        log_box.addWidget(self.lbl_log_file)
+
+        btn_log_layout = QHBoxLayout()
+        self.btn_open_log_dialog = QPushButton(tr("settings.view_logs", "Open Live Log Viewer"))
+        self.btn_open_log_dialog.clicked.connect(self.show_log_dialog)
+        btn_log_layout.addWidget(self.btn_open_log_dialog)
+        btn_log_layout.addStretch()
+        log_box.addLayout(btn_log_layout)
+        layout.addWidget(self.group_log)
 
         # General & Localization
         self.group_gen = QGroupBox(tr("settings.localization", "General & Localization"))
@@ -99,6 +116,10 @@ class SettingsPage(QWidget):
 
         layout.addStretch()
 
+    def show_log_dialog(self):
+        dialog = LogViewerDialog(self)
+        dialog.exec()
+
     def on_language_changed(self, index: int):
         lang_code = self.combo_lang.itemData(index)
         if lang_code:
@@ -112,6 +133,8 @@ class SettingsPage(QWidget):
     def retranslate_ui(self):
         self.title.setText(tr("settings.title", "Application Settings & Diagnostics"))
         self.group_im.setTitle(tr("settings.im_diagnostics", "ImageMagick Engine Diagnostics"))
+        self.group_log.setTitle(tr("settings.dev_logs", "Developer & Debug Logging"))
+        self.btn_open_log_dialog.setText(tr("settings.view_logs", "Open Live Log Viewer"))
         self.group_gen.setTitle(tr("settings.localization", "General & Localization"))
         self.lbl_lang.setText(tr("settings.language", "Language:"))
         self.lbl_theme.setText(tr("settings.theme", "UI Theme:"))

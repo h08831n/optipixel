@@ -34,5 +34,15 @@
   "stats.failed": "ناموفق",
   "stats.original_size": "حجم اولیه",
   "stats.final_size": "حجم نهایی",
-  "stats.saved": "حجم صرفه‌جویی شده"
+  "stats.saved": "حجم صرفه‌جویی شده",
+  "settings.title": "تنظیمات و اشکال‌زدایی برنامه",
+  "settings.dev_logs": "سیستم لاگ و اشکال‌زدایی توسعه‌دهنده",
+  "settings.view_logs": "مشاهده زنده لاگ‌ها و خطاها",
+  "log.title": "لاگ‌های توسعه و اشکال‌زدایی OptiPixel",
+  "log.refresh": "بروزرسانی لاگ‌ها",
+  "log.copy": "کپی در حافظه",
+  "log.open_file": "باز کردن فایل لاگ",
+  "log.clear": "پاکسازی حافظه لاگ",
+  "log.copied": "لاگ‌ها با موفقیت کپی شدند.",
+  "common.close": "بستن"
 }
