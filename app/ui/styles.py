@@ -8,6 +8,7 @@ QMainWindow, QDialog {
 
 QWidget {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Vazirmatn", sans-serif;
+    font-size: 10pt;
     color: #F8FAFC;
 }
 
@@ -256,6 +257,7 @@ QMainWindow, QDialog {
 
 QWidget {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Vazirmatn", sans-serif;
+    font-size: 10pt;
     color: #0F172A;
 }
 

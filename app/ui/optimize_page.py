@@ -67,7 +67,7 @@ class OptimizePage(QWidget):
         self.quality_ctrl = QualityControlWidget(82)
 
         self.chk_threshold = QCheckBox(tr("label.threshold", "Optimize only images >"))
-        self.chk_threshold.setChecked(True)
+        self.chk_threshold.setChecked(False)
         self.spin_threshold = QSpinBox()
         self.spin_threshold.setRange(10, 50000)
         self.spin_threshold.setValue(400)

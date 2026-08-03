@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QListWidgetItem,
     QStackedWidget, QStatusBar, QMessageBox, QApplication
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon, QPixmap
 
 from app.config.constants import APP_NAME, APP_TAGLINE
@@ -42,6 +42,8 @@ class MainWindow(QMainWindow):
         self.active_results: List[ProcessingResult] = []
         self.active_workers: List[ProcessingWorker] = []
         self.job_start_time = 0.0
+        self.total_job_files = 0
+        self.completed_job_files = 0
 
         # Set window icon
         logo_path = Path(__file__).parent.parent.parent / "public" / "logo.svg"
@@ -156,6 +158,32 @@ class MainWindow(QMainWindow):
     def on_nav_changed(self, index: int):
         self.stack.setCurrentIndex(index)
 
+    @Slot(object)
+    def on_worker_finished(self, result: ProcessingResult):
+        self.active_results.append(result)
+        self.completed_job_files += 1
+
+        curr_page = self.stack.currentWidget()
+        if hasattr(curr_page, "progress_widget"):
+            curr_page.progress_widget.update_progress(
+                current=self.completed_job_files,
+                total=self.total_job_files,
+                current_file=result.source_path.name
+            )
+
+        if self.completed_job_files >= self.total_job_files and self.total_job_files > 0:
+            self.on_job_completed(self.total_job_files)
+
+    @Slot(str, str)
+    def on_worker_error(self, file_path_str: str, err_msg: str):
+        res = ProcessingResult(
+            source_path=Path(file_path_str),
+            output_path=Path(file_path_str),
+            status="failed",
+            message=err_msg
+        )
+        self.on_worker_finished(res)
+
     def start_batch_job(self, config: dict):
         images = config["images"]
         if not images:
@@ -174,32 +202,8 @@ class MainWindow(QMainWindow):
         self.active_results.clear()
         self.active_workers.clear()
         self.job_start_time = time.time()
-        total = len(images)
-        completed = [0]
-
-        def on_finished(result: ProcessingResult):
-            self.active_results.append(result)
-            completed[0] += 1
-            
-            curr_page = self.stack.currentWidget()
-            if hasattr(curr_page, "progress_widget"):
-                curr_page.progress_widget.update_progress(
-                    current=completed[0],
-                    total=total,
-                    current_file=result.source_path.name
-                )
-
-            if completed[0] == total:
-                self.on_job_completed(total)
-
-        def on_error(file_path_str: str, err_msg: str):
-            res = ProcessingResult(
-                source_path=Path(file_path_str),
-                output_path=Path(file_path_str),
-                status="failed",
-                message=err_msg
-            )
-            on_finished(res)
+        self.total_job_files = len(images)
+        self.completed_job_files = 0
 
         for img in images:
             worker = ProcessingWorker(
@@ -209,8 +213,8 @@ class MainWindow(QMainWindow):
                 settings=settings,
                 output_manager=output_mgr
             )
-            worker.signals.finished.connect(on_finished)
-            worker.signals.error.connect(on_error)
+            worker.signals.finished.connect(self.on_worker_finished, Qt.ConnectionType.QueuedConnection)
+            worker.signals.error.connect(self.on_worker_error, Qt.ConnectionType.QueuedConnection)
             self.active_workers.append(worker)
             self.worker_pool.start_worker(worker)
 

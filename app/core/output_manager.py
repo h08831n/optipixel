@@ -23,7 +23,10 @@ class OutputManager:
         self.collision_strategy = collision_strategy
 
     def resolve_output_path(self, source_path: Path, target_format: ImageFormat) -> Path:
-        target_ext = target_format.to_extension()
+        if target_format in (ImageFormat.ORIGINAL, ImageFormat.UNKNOWN):
+            target_ext = source_path.suffix
+        else:
+            target_ext = target_format.to_extension()
 
         if self.mode == OUTPUT_MODE_REPLACE:
             if target_format == ImageFormat.ORIGINAL:
