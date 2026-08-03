@@ -95,8 +95,8 @@ class ImageOptimizer:
 
                 quality = settings.get("quality", 82)
 
-                # Color mode and format conversion handling
-                if save_fmt == "JPEG":
+                # Format-specific color mode handling
+                if save_fmt in ("JPEG", "BMP"):
                     if img.mode in ("RGBA", "LA", "P"):
                         if img.mode == "P":
                             img = img.convert("RGBA")
@@ -108,16 +108,17 @@ class ImageOptimizer:
                         img = bg
                     elif img.mode != "RGB":
                         img = img.convert("RGB")
+
                 elif save_fmt == "WEBP":
-                    if img.mode in ("P", "LA"):
-                        img = img.convert("RGBA")
+                    if img.mode in ("CMYK", "P", "LA", "I", "F"):
+                        if "A" in img.mode or (img.mode == "P" and "transparency" in img.info):
+                            img = img.convert("RGBA")
+                        else:
+                            img = img.convert("RGB")
+
                 elif save_fmt == "PNG":
-                    if quality <= 92 and img.mode in ("RGB", "RGBA"):
-                        try:
-                            # Quantize palette to 256 colors for max compression (pngquant/TinyPNG style)
-                            img = img.quantize(colors=256, method=2)
-                        except Exception as q_err:
-                            logger.warning(f"PNG quantize warning: {q_err}")
+                    if img.mode in ("CMYK", "I", "F"):
+                        img = img.convert("RGBA" if "A" in img.mode else "RGB")
 
                 # Resize logic
                 if settings.get("enable_resize", False):
@@ -134,7 +135,6 @@ class ImageOptimizer:
                         img.thumbnail((max_w, max_h), PILImage.Resampling.LANCZOS)
 
                 save_kwargs = {}
-
                 if save_fmt == "WEBP":
                     save_kwargs["quality"] = quality
                     save_kwargs["method"] = 6
@@ -147,11 +147,20 @@ class ImageOptimizer:
                     save_kwargs["compress_level"] = 9
 
                 temp_output.parent.mkdir(parents=True, exist_ok=True)
-                img.save(temp_output, format=save_fmt, **save_kwargs)
+                try:
+                    img.save(temp_output, format=save_fmt, **save_kwargs)
+                except (KeyError, ValueError, TypeError, OSError) as save_err:
+                    logger.warning(f"Secondary save attempt without advanced options due to: {save_err}")
+                    try:
+                        img.save(temp_output, format=save_fmt)
+                    except Exception as fallback_err:
+                        return False, f"Pillow cannot save in {save_fmt} format: {fallback_err}"
+
                 if temp_output.exists() and temp_output.stat().st_size > 0:
-                    return True, "Successfully processed with Pillow"
+                    return True, f"Successfully processed with Pillow ({save_fmt})"
                 return False, "Pillow produced empty file"
         except Exception as e:
+            logger.error(f"Pillow exception on {input_path.name}: {e}")
             return False, f"Pillow processing error: {e}"
 
     def optimize(
