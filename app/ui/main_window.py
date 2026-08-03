@@ -193,8 +193,9 @@ class MainWindow(QMainWindow):
         def on_error(file_path_str: str, err_msg: str):
             res = ProcessingResult(
                 source_path=Path(file_path_str),
+                output_path=Path(file_path_str),
                 status="failed",
-                error_message=err_msg
+                message=err_msg
             )
             on_finished(res)
 

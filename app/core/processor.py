@@ -17,16 +17,16 @@ from app.config.constants import OUTPUT_MODE_REPLACE
 @dataclass
 class ProcessingResult:
     source_path: Path
-    output_path: Path
-    original_size_bytes: int
-    new_size_bytes: int
-    original_format: ImageFormat
-    output_format: ImageFormat
-    width: int
-    height: int
-    status: str  # "optimized", "converted", "skipped", "failed"
-    message: str
-    duration_seconds: float
+    output_path: Path = Path("")
+    original_size_bytes: int = 0
+    new_size_bytes: int = 0
+    original_format: ImageFormat = ImageFormat.UNKNOWN
+    output_format: ImageFormat = ImageFormat.UNKNOWN
+    width: int = 0
+    height: int = 0
+    status: str = "failed"  # "optimized", "converted", "skipped", "failed"
+    message: str = ""
+    duration_seconds: float = 0.0
     backup_path: Optional[Path] = None
 
     @property
