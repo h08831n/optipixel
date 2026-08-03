@@ -196,7 +196,8 @@ class MainWindow(QMainWindow):
             mode=settings.get("output_mode", "folder"),
             output_folder=settings.get("output_folder"),
             base_input_folder=settings.get("base_input_folder"),
-            preserve_structure=settings.get("preserve_structure", False)
+            preserve_structure=settings.get("preserve_structure", False),
+            collision_strategy=settings.get("collision_strategy", "overwrite")
         )
 
         self.active_results.clear()

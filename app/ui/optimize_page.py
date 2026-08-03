@@ -78,7 +78,7 @@ class OptimizePage(QWidget):
         thresh_layout.addWidget(self.spin_threshold)
 
         self.chk_keep_orig = QCheckBox(tr("label.keep_original", "Keep original if output is larger"))
-        self.chk_keep_orig.setChecked(True)
+        self.chk_keep_orig.setChecked(False)
 
         fmt_box.addWidget(self.fmt_selector)
         fmt_box.addWidget(self.quality_ctrl)

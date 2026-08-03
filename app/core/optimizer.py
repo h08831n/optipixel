@@ -93,11 +93,31 @@ class ImageOptimizer:
                 else:
                     save_fmt = save_ext
 
-                # Handle color modes
-                if save_fmt == "JPEG" and img.mode in ("RGBA", "P", "LA"):
-                    img = img.convert("RGB")
-                elif save_fmt == "WEBP" and img.mode in ("P", "LA"):
-                    img = img.convert("RGBA")
+                quality = settings.get("quality", 82)
+
+                # Color mode and format conversion handling
+                if save_fmt == "JPEG":
+                    if img.mode in ("RGBA", "LA", "P"):
+                        if img.mode == "P":
+                            img = img.convert("RGBA")
+                        bg = PILImage.new("RGB", img.size, (255, 255, 255))
+                        if "A" in img.mode:
+                            bg.paste(img, mask=img.split()[3])
+                        else:
+                            bg.paste(img)
+                        img = bg
+                    elif img.mode != "RGB":
+                        img = img.convert("RGB")
+                elif save_fmt == "WEBP":
+                    if img.mode in ("P", "LA"):
+                        img = img.convert("RGBA")
+                elif save_fmt == "PNG":
+                    if quality <= 92 and img.mode in ("RGB", "RGBA"):
+                        try:
+                            # Quantize palette to 256 colors for max compression (pngquant/TinyPNG style)
+                            img = img.quantize(colors=256, method=2)
+                        except Exception as q_err:
+                            logger.warning(f"PNG quantize warning: {q_err}")
 
                 # Resize logic
                 if settings.get("enable_resize", False):
@@ -113,7 +133,6 @@ class ImageOptimizer:
                     if should_resize:
                         img.thumbnail((max_w, max_h), PILImage.Resampling.LANCZOS)
 
-                quality = settings.get("quality", 82)
                 save_kwargs = {}
 
                 if save_fmt == "WEBP":
@@ -125,6 +144,7 @@ class ImageOptimizer:
                     save_kwargs["progressive"] = True
                 elif save_fmt == "PNG":
                     save_kwargs["optimize"] = True
+                    save_kwargs["compress_level"] = 9
 
                 temp_output.parent.mkdir(parents=True, exist_ok=True)
                 img.save(temp_output, format=save_fmt, **save_kwargs)
@@ -149,7 +169,7 @@ class ImageOptimizer:
         src_size_bytes = input_path.stat().st_size
         src_size_kb = src_size_bytes / 1024.0
 
-        if settings.get("threshold_enabled", True):
+        if settings.get("threshold_enabled", False):
             min_threshold_kb = settings.get("size_threshold_kb", 400)
             if src_size_kb <= min_threshold_kb:
                 msg = f"Skipped: File size ({src_size_kb:.1f} KB) <= threshold ({min_threshold_kb} KB)"
@@ -163,6 +183,7 @@ class ImageOptimizer:
         temp_output = temp_dir / f"temp_{os.urandom(8).hex()}{target_ext}"
 
         actual_format = target_format if target_format != ImageFormat.ORIGINAL else ImageFormat.from_extension(input_path.suffix)
+        is_conversion = (target_format != ImageFormat.ORIGINAL) and (target_format != ImageFormat.from_extension(input_path.suffix))
 
         # 1. Try ImageMagick if available
         im_error_msg = ""
@@ -173,12 +194,12 @@ class ImageOptimizer:
                 success, stdout, stderr = self.im_service.execute(args)
                 if success and temp_output.exists() and temp_output.stat().st_size > 0:
                     opt_size_bytes = temp_output.stat().st_size
-                    if settings.get("keep_original_if_larger", True) and opt_size_bytes >= src_size_bytes:
+                    if not is_conversion and settings.get("keep_original_if_larger", False) and opt_size_bytes >= src_size_bytes:
                         temp_output.unlink()
                         msg = f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
                         logger.info(f"{input_path.name}: {msg}")
                         return False, input_path, msg
-                    logger.info(f"ImageMagick successfully optimized {input_path.name} -> {opt_size_bytes/1024:.1f} KB")
+                    logger.info(f"ImageMagick successfully processed {input_path.name} -> {opt_size_bytes/1024:.1f} KB")
                     return True, temp_output, "Successfully optimized"
                 else:
                     im_error_msg = stderr or "Empty output"
@@ -188,18 +209,18 @@ class ImageOptimizer:
                 logger.warning(f"ImageMagick exception for {input_path.name}: {im_error_msg}")
 
         # 2. Fallback to Pillow
-        logger.info(f"Using Pillow fallback for {input_path.name}...")
+        logger.info(f"Using Pillow engine for {input_path.name}...")
         pil_ok, pil_msg = self._optimize_with_pillow(input_path, temp_output, actual_format, settings)
         if pil_ok:
             opt_size_bytes = temp_output.stat().st_size
-            if settings.get("keep_original_if_larger", True) and opt_size_bytes >= src_size_bytes:
+            if not is_conversion and settings.get("keep_original_if_larger", False) and opt_size_bytes >= src_size_bytes:
                 if temp_output.exists():
                     temp_output.unlink()
                 msg = f"Skipped: Optimized file ({opt_size_bytes/1024:.1f} KB) >= Original ({src_size_kb:.1f} KB)"
                 logger.info(f"{input_path.name}: {msg}")
                 return False, input_path, msg
             logger.info(f"Pillow successfully processed {input_path.name} -> {opt_size_bytes/1024:.1f} KB")
-            return True, temp_output, "Successfully optimized (Pillow engine)"
+            return True, temp_output, "Successfully processed (Pillow engine)"
 
         if temp_output.exists():
             temp_output.unlink()
