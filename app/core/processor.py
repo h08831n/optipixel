@@ -13,6 +13,29 @@ from app.core.backup_manager import BackupManager
 from app.core.formats import ImageFormat
 from app.core.image_info import ImageInfo
 from app.config.constants import OUTPUT_MODE_REPLACE
+from app.utils.logging_utils import get_logger
+
+logger = get_logger()
+
+def safe_move_or_replace(src: Path, dst: Path) -> None:
+    """Safely move or replace a file across drives and overwrite existing destination files without failing on Windows."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists() and dst != src:
+        try:
+            dst.unlink()
+        except Exception as unlink_err:
+            logger.warning(f"Could not remove existing target file {dst}: {unlink_err}")
+
+    try:
+        shutil.move(str(src), str(dst))
+    except Exception as move_err:
+        logger.debug(f"shutil.move failed ({move_err}), falling back to copy2 and unlink")
+        shutil.copy2(str(src), str(dst))
+        if src.exists():
+            try:
+                src.unlink()
+            except Exception:
+                pass
 
 @dataclass
 class ProcessingResult:
@@ -122,10 +145,7 @@ class ImageProcessor:
                 if settings.get("backup", {}).get("enabled", True):
                     backup_created = self.backup_manager.create_backup(src_path)
 
-                shutil.move(str(temp_output_path), str(final_output_path))
-            else:
-                final_output_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(temp_output_path), str(final_output_path))
+            safe_move_or_replace(temp_output_path, final_output_path)
 
             out_info = ImageInfo.extract(final_output_path)
             status_str = "converted" if image_info.format != actual_target_fmt else "optimized"
