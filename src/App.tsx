@@ -1,0 +1,68 @@
+import React, { useState, useEffect } from "react";
+import { Header } from "./components/Header";
+import { OptimizePage } from "./components/OptimizePage";
+import { ConvertPage } from "./components/ConvertPage";
+import { AuditPage } from "./components/AuditPage";
+import { HistoryPage } from "./components/HistoryPage";
+import { SettingsPage } from "./components/SettingsPage";
+import { CodeExplorerModal } from "./components/CodeExplorerModal";
+import { AboutPage } from "./components/AboutPage";
+import { JobHistoryEntry, LanguageCode } from "./types";
+import { isRtlLanguage } from "./i18n";
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState("optimize");
+  const [lang, setLang] = useState<LanguageCode>("en");
+  const [darkMode, setDarkMode] = useState(false);
+  const [history, setHistory] = useState<JobHistoryEntry[]>([]);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  const isRtl = isRtlLanguage(lang);
+
+  const addHistoryEntry = (entry: Omit<JobHistoryEntry, "id" | "timestamp">) => {
+    const newEntry: JobHistoryEntry = {
+      id: history.length + 1,
+      timestamp: new Date().toLocaleString(),
+      ...entry
+    };
+    setHistory((prev) => [newEntry, ...prev]);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+  };
+
+  return (
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans ${darkMode ? "dark" : ""}`} dir={isRtl ? "rtl" : "ltr"}>
+      <Header
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        lang={lang}
+        setLang={setLang}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === "optimize" && (
+          <OptimizePage lang={lang} onAddHistoryEntry={addHistoryEntry} />
+        )}
+        {activeTab === "convert" && <ConvertPage lang={lang} />}
+        {activeTab === "audit" && <AuditPage lang={lang} />}
+        {activeTab === "history" && (
+          <HistoryPage history={history} onClearHistory={clearHistory} lang={lang} />
+        )}
+        {activeTab === "settings" && <SettingsPage lang={lang} />}
+        {activeTab === "code" && <CodeExplorerModal />}
+        {activeTab === "about" && <AboutPage lang={lang} />}
+      </main>
+    </div>
+  );
+}

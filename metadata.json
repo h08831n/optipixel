@@ -1,0 +1,6 @@
+{
+  "name": "OptiPixel",
+  "description": "Web Image Optimizer & Converter - Professional Desktop & Web Application for Image Compression and Format Conversion",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
