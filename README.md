@@ -1,8 +1,9 @@
 # OptiPixel 🖼️⚡
 
-**OptiPixel** is a high-performance, cross-platform image optimization, batch conversion, and SEO media auditing desktop application built with Python (PySide6) and ImageMagick 7 CLI engine, as well as a modern web interface.
+**OptiPixel** is a high-performance image optimization, batch converter, and web media auditing tool. Built with **Python (PySide6)** and **ImageMagick 7**, along with a modern web dashboard.
 
-[![GitHub Release](https://img.shields.io/github/v/release/h08831n/OptiPixel)](https://github.com/h08831n/OptiPixel/releases)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-h08831n%2FOptiPixel-blue?logo=github)](https://github.com/h08831n/OptiPixel)
+[![GitHub Release](https://img.shields.io/github/v/release/h08831n/OptiPixel?color=emerald)](https://github.com/h08831n/OptiPixel/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://python.org)
 
@@ -10,49 +11,70 @@ Languages: [English](README.md) | [فارسی](README.fa.md)
 
 ---
 
-## 🌟 Key Features
+## 📥 Download & Usage (Released Version)
 
-- **⚡ Batch Image Optimization**: Lossy and Lossless WebP, AVIF, JPEG, PNG, TIFF, and BMP compression.
-- **🎯 Smart Threshold Filtering**: Automatically skip images smaller than a configurable threshold (e.g. 400 KB).
-- **🛡️ Quality Preservation Guard**: Keeps original files if compressed output happens to be larger.
-- **📐 Smart Resizing**: Constrain maximum width and height while maintaining aspect ratio.
-- **🏷️ Metadata Control**: Strip unnecessary EXIF data while preserving correct orientation.
-- **🔍 SEO & Core Web Vitals Audit**: Read-only directory scanner that highlights heavy web images.
-- **💼 Multiple Output Strategies**: Save to a new directory, replace originals with automatic backups, or save alongside source files.
-- **❤️ Crypto Donation Support**: Support open-source development directly via TON network crypto transfers.
+To use the pre-compiled, ready-to-run desktop version on Windows:
+
+1. Download the latest installer `OptiPixel-Installer.exe` from [GitHub Releases](https://github.com/h08831n/OptiPixel/releases).
+2. Run `OptiPixel-Installer.exe` to install OptiPixel on your machine.
+3. Launch **OptiPixel** from your Start Menu or Desktop shortcut.
 
 ---
 
-## 📦 How to Build & Publish Releases
+## 🛠️ Stack & Technologies Used
+
+- **GUI Engine**: PySide6 (Qt for Python 6) & React 19 + TypeScript + Tailwind CSS
+- **Processing Core**: ImageMagick 7 CLI engine (High-speed WebP, AVIF, JPEG, PNG, TIFF, BMP codecs)
+- **Backend API Server**: Node.js & Express.js (Local runner bridge)
+- **Packaging**: PyInstaller & Inno Setup (Windows installer generator)
+
+---
+
+## 💻 Development & Local Setup
 
 ### 1. Prerequisites
-- Python 3.10+
-- ImageMagick 7 (`magick` CLI in PATH)
-- Inno Setup 6 (for Windows installer `.exe` creation)
+- Python 3.10 or higher
+- Node.js 18 or higher (for Web UI)
+- ImageMagick 7 installed in system PATH (`magick` or `convert` CLI command)
 
-### 2. Local Build Script (Windows)
-Run PowerShell build script:
+### 2. Running Python Desktop App
+```bash
+# Clone the repository
+git clone https://github.com/h08831n/OptiPixel.git
+cd OptiPixel
+
+# Install dependencies (Standard library urllib is used for network calls)
+pip install -r requirements.txt
+
+# Run application
+python -m app.main
+```
+Or use the PowerShell runner script on Windows:
+```powershell
+.\run.ps1
+```
+
+### 3. Running Web Interface
+```bash
+# Install node packages
+npm install
+
+# Start local dev server
+npm run dev
+```
+
+### 4. Building Executable & Installer
+To compile the standalone Windows `.exe` and installer:
 ```powershell
 .\build.ps1
 ```
-This compiles `app/main.py` into a single standalone executable using PyInstaller and packages it into `OptiPixel-Installer.exe` using Inno Setup (`installer/OptiPixel.iss`).
-
-### 3. Creating a GitHub Release
-1. Tag your repository with the version number:
-   ```bash
-   git tag -a v0.1.0 -m "Release v0.1.0"
-   git push origin v0.1.0
-   ```
-2. Go to `https://github.com/h08831n/OptiPixel/releases/new`
-3. Select `v0.1.0` tag, enter Release Title and Changelog notes.
-4. Upload `OptiPixel-Installer.exe` and `OptiPixel-Standalone.zip` from `dist/` build directory.
-5. Publish Release!
+The compiled output will be generated inside the `dist/` directory.
 
 ---
 
 ## ☕ Support & Crypto Donation
 
-If OptiPixel saved you bandwidth or time, consider supporting development:
+If OptiPixel saved you bandwidth or time, consider supporting ongoing development:
 
 - **TON / USDT (TON Network) Wallet Address**:
   `UQBHs-6YLo4igSTy470tsyH7g5myvCTAxz6C4e7GothWY9J3`
@@ -61,8 +83,8 @@ If OptiPixel saved you bandwidth or time, consider supporting development:
 
 ## 🐛 Bug Reports & Feedback
 
-Found an issue or have a feature request?
-Submit a report on GitHub Issues: [https://github.com/h08831n/OptiPixel/issues](https://github.com/h08831n/OptiPixel/issues)
+Found an issue or have a feature request? Submit a report on GitHub:
+[https://github.com/h08831n/OptiPixel/issues](https://github.com/h08831n/OptiPixel/issues)
 
 ---
 
