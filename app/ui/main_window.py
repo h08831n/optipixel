@@ -40,6 +40,7 @@ class MainWindow(QMainWindow):
         self.processor = ImageProcessor(self.im_service)
 
         self.active_results: List[ProcessingResult] = []
+        self.active_workers: List[ProcessingWorker] = []
         self.job_start_time = 0.0
 
         # Set window icon
@@ -171,6 +172,7 @@ class MainWindow(QMainWindow):
         )
 
         self.active_results.clear()
+        self.active_workers.clear()
         self.job_start_time = time.time()
         total = len(images)
         completed = [0]
@@ -209,9 +211,11 @@ class MainWindow(QMainWindow):
             )
             worker.signals.finished.connect(on_finished)
             worker.signals.error.connect(on_error)
+            self.active_workers.append(worker)
             self.worker_pool.start_worker(worker)
 
     def on_job_completed(self, total: int):
+        self.active_workers.clear()
         duration = time.time() - self.job_start_time
         processed = [r for r in self.active_results if r.status in ("optimized", "converted")]
         skipped = [r for r in self.active_results if r.status == "skipped"]
