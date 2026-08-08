@@ -46,10 +46,12 @@ from app.ui.styles import DARK_STYLESHEET, LIGHT_STYLESHEET
 
 from app.ui.optimize_page import OptimizePage
 from app.ui.convert_page import ConvertPage
+from app.ui.ftp_page import FTPPage
 from app.ui.audit_page import AuditPage
 from app.ui.history_page import HistoryPage
 from app.ui.settings_page import SettingsPage
 from app.ui.about_page import AboutPage
+from app.services.ftp_service import FTPService
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -67,6 +69,7 @@ class MainWindow(QMainWindow):
         self.job_start_time = 0.0
         self.total_job_files = 0
         self.completed_job_files = 0
+        self.active_ftp_config: Optional[dict] = None
 
         # Set window icon
         logo_path = Path(__file__).parent.parent.parent / "public" / "logo.svg"
@@ -98,10 +101,11 @@ class MainWindow(QMainWindow):
         nav_items = [
             (f"⚡ {tr('nav.optimize', 'Optimize')}", 0),
             (f"🔄 {tr('nav.convert', 'Convert')}", 1),
-            (f"🔍 {tr('nav.audit', 'Audit')}", 2),
-            (f"📜 {tr('nav.history', 'History')}", 3),
-            (f"⚙️ {tr('nav.settings', 'Settings')}", 4),
-            (f"ℹ️ {tr('nav.about', 'About')}", 5)
+            (f"🌐 {tr('nav.ftp', 'FTP Sync')}", 2),
+            (f"🔍 {tr('nav.audit', 'Audit')}", 3),
+            (f"📜 {tr('nav.history', 'History')}", 4),
+            (f"⚙️ {tr('nav.settings', 'Settings')}", 5),
+            (f"ℹ️ {tr('nav.about', 'About')}", 6)
         ]
 
         for text, index in nav_items:
@@ -120,6 +124,9 @@ class MainWindow(QMainWindow):
         self.convert_page = ConvertPage(self.im_service)
         self.convert_page.start_conversion_requested.connect(self.start_batch_job)
 
+        self.ftp_page = FTPPage()
+        self.ftp_page.images_downloaded_for_processing.connect(self.on_ftp_images_downloaded)
+
         self.audit_page = AuditPage()
         self.history_page = HistoryPage()
         
@@ -130,6 +137,7 @@ class MainWindow(QMainWindow):
 
         self.stack.addWidget(self.optimize_page)
         self.stack.addWidget(self.convert_page)
+        self.stack.addWidget(self.ftp_page)
         self.stack.addWidget(self.audit_page)
         self.stack.addWidget(self.history_page)
         self.stack.addWidget(self.settings_page)
@@ -168,6 +176,7 @@ class MainWindow(QMainWindow):
         nav_items_text = [
             f"⚡ {tr('nav.optimize', 'Optimize')}",
             f"🔄 {tr('nav.convert', 'Convert')}",
+            f"🌐 {tr('nav.ftp', 'FTP Sync')}",
             f"🔍 {tr('nav.audit', 'Audit')}",
             f"📜 {tr('nav.history', 'History')}",
             f"⚙️ {tr('nav.settings', 'Settings')}",
@@ -180,6 +189,19 @@ class MainWindow(QMainWindow):
 
     def on_nav_changed(self, index: int):
         self.stack.setCurrentIndex(index)
+
+    @Slot(list, dict)
+    def on_ftp_images_downloaded(self, image_infos: list, ftp_config: dict):
+        self.active_ftp_config = ftp_config
+        self.optimize_page.scanned_images = image_infos
+        self.optimize_page.file_list.populate_items(image_infos)
+        self.optimize_page.stats_card.update_stats(len(image_infos), 0, 0, 0, sum(i.size_bytes for i in image_infos), 0)
+        self.sidebar.setCurrentRow(0)  # Switch to Optimize page
+        QMessageBox.information(
+            self,
+            "FTP",
+            f"Downloaded {len(image_infos)} images from FTP into OptiPixel!\nClick 'Start Processing' to optimize them."
+        )
 
     @Slot(object)
     def on_worker_finished(self, result: ProcessingResult):
@@ -276,5 +298,34 @@ class MainWindow(QMainWindow):
             if len(failed) > 5:
                 fail_details += f"\n...and {len(failed) - 5} more."
             msg_body += f"\n\n{tr('dialog.fail_details', 'Failure details')}:\n{fail_details}"
+
+        # Auto-upload back to FTP if active
+        if self.active_ftp_config and self.active_ftp_config.get("auto_upload") and processed:
+            upload_count = 0
+            ftp_service = FTPService()
+            params = self.active_ftp_config["params"]
+            dl_map = self.active_ftp_config.get("map", {})
+
+            ok, _ = ftp_service.connect(
+                host=params["host"], port=params["port"],
+                user=params["user"], password=params["password"],
+                use_tls=params["use_tls"], passive=params["passive"]
+            )
+            if ok:
+                for res in processed:
+                    src_key = str(res.source_path)
+                    remote_target = dl_map.get(src_key)
+                    if not remote_target:
+                        remote_target = f"{params['remote_dir'].rstrip('/')}/{res.output_path.name}"
+
+                    try:
+                        ftp_service.upload_file(res.output_path, remote_target)
+                        upload_count += 1
+                    except Exception as e:
+                        pass
+                ftp_service.disconnect()
+                msg_body += f"\n\n🌐 {upload_count} optimized files uploaded back to FTP!"
+
+            self.active_ftp_config = None
 
         QMessageBox.information(self, msg_title, msg_body)
