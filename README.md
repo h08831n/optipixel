@@ -12,15 +12,6 @@ Languages: [English](README.md) | [فارسی](README.fa.md)
 
 ---
 
-## 🚀 What's New in Version 1.0.0
-
-- 🎨 **IRANYekanX Typography**: Integrated premium **IRANYekanX** font for high-legibility Persian/Arabic and English UI rendering.
-- ⚡ **Silent Background Execution**: ImageMagick background conversions now run with suppressed terminal windows (`CREATE_NO_WINDOW`) so no Command Prompt popups interrupt your workflow.
-- 🔄 **In-App Direct Auto-Update**: Built-in auto-update system that downloads the installer package directly with a progress bar and installs it seamlessly inside the app.
-- 📦 **Unified Full Feature Set**: Consolidates image compression, batch conversion, web site auditing, history tracking, FTP uploads, and backup management into a stable `v1.0.0` release.
-
----
-
 ## 📥 Download Latest Release
 
 Get the latest installer from the official release page:
