@@ -38,14 +38,14 @@ class OutputManager:
             return source_path.parent / new_name
 
         elif self.mode == OUTPUT_MODE_FOLDER:
-            if not self.output_folder:
-                raise ValueError("Output folder must be specified for 'folder' mode.")
+            out_folder = self.output_folder if self.output_folder else (source_path.parent / "optimized")
+            out_folder.mkdir(parents=True, exist_ok=True)
 
             if self.preserve_structure and self.base_input_folder and source_path.is_relative_to(self.base_input_folder):
                 rel_path = source_path.relative_to(self.base_input_folder)
-                target_path = self.output_folder / rel_path.with_suffix(target_ext)
+                target_path = out_folder / rel_path.with_suffix(target_ext)
             else:
-                target_path = self.output_folder / source_path.name
+                target_path = out_folder / source_path.name
                 target_path = target_path.with_suffix(target_ext)
 
             target_path.parent.mkdir(parents=True, exist_ok=True)

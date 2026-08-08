@@ -81,57 +81,85 @@ class ImageOptimizer:
             return False, "Pillow library is not installed"
 
         try:
+            try:
+                import pillow_heif
+                pillow_heif.register_heif_opener()
+                pillow_heif.register_avif_opener()
+            except Exception:
+                pass
+
             with PILImage.open(input_path) as img:
                 try:
-                    img = ImageOps.exif_transpose(img)
+                    transposed = ImageOps.exif_transpose(img)
+                    if transposed is not None:
+                        img = transposed
                 except Exception:
                     pass
 
-                save_ext = target_format.to_extension().lstrip(".").upper() if target_format != ImageFormat.ORIGINAL else input_path.suffix.lstrip(".").upper()
-                if save_ext in ("JPG", "JPEG"):
-                    save_fmt = "JPEG"
+                PIL_FORMAT_MAP = {
+                    "JPG": "JPEG",
+                    "JPEG": "JPEG",
+                    "JFIF": "JPEG",
+                    "PJPEG": "JPEG",
+                    "PJP": "JPEG",
+                    "PNG": "PNG",
+                    "WEBP": "WEBP",
+                    "TIF": "TIFF",
+                    "TIFF": "TIFF",
+                    "BMP": "BMP",
+                    "GIF": "GIF",
+                    "HEIC": "HEIF",
+                    "HEIF": "HEIF",
+                    "AVIF": "AVIF"
+                }
+
+                if target_format != ImageFormat.ORIGINAL:
+                    raw_ext = target_format.to_extension().lstrip(".").upper()
                 else:
-                    save_fmt = save_ext
+                    raw_ext = input_path.suffix.lstrip(".").upper()
 
-                quality = settings.get("quality", 82)
+                save_fmt = PIL_FORMAT_MAP.get(raw_ext)
+                if not save_fmt:
+                    if hasattr(img, "format") and img.format in ("JPEG", "PNG", "WEBP", "TIFF", "BMP", "GIF", "HEIF", "AVIF"):
+                        save_fmt = img.format
+                    else:
+                        save_fmt = "JPEG"
 
-                # Format-specific color mode handling
+                quality = int(settings.get("quality", 82))
+                quality = max(1, min(100, quality))
+
+                # Safe mode conversion
                 if save_fmt in ("JPEG", "BMP"):
-                    if img.mode in ("RGBA", "LA", "P"):
-                        if img.mode == "P":
+                    if img.mode in ("RGBA", "LA", "PA") or (img.mode == "P" and "transparency" in img.info):
+                        try:
                             img = img.convert("RGBA")
-                        bg = PILImage.new("RGB", img.size, (255, 255, 255))
-                        if "A" in img.mode:
+                            bg = PILImage.new("RGB", img.size, (255, 255, 255))
                             bg.paste(img, mask=img.split()[3])
-                        else:
-                            bg.paste(img)
-                        img = bg
+                            img = bg
+                        except Exception:
+                            img = img.convert("RGB")
                     elif img.mode != "RGB":
                         img = img.convert("RGB")
 
-                elif save_fmt == "WEBP":
-                    if img.mode in ("CMYK", "P", "LA", "I", "F"):
-                        if "A" in img.mode or (img.mode == "P" and "transparency" in img.info):
+                elif save_fmt in ("WEBP", "PNG"):
+                    if img.mode not in ("RGB", "RGBA"):
+                        if "A" in img.mode or (img.mode == "P" and "transparency" in img.info) or img.mode in ("LA", "PA"):
                             img = img.convert("RGBA")
                         else:
                             img = img.convert("RGB")
 
-                elif save_fmt == "PNG":
-                    if img.mode in ("CMYK", "I", "F"):
-                        img = img.convert("RGBA" if "A" in img.mode else "RGB")
-
                 # Resize logic
                 if settings.get("enable_resize", False):
-                    max_w = settings.get("max_width", 2000)
-                    max_h = settings.get("max_height", 2000)
-                    only_shrink = settings.get("only_shrink", True)
-                    
+                    max_w = int(settings.get("max_width", 2000))
+                    max_h = int(settings.get("max_height", 2000))
+                    only_shrink = bool(settings.get("only_shrink", True))
+
                     cur_w, cur_h = img.size
                     should_resize = True
                     if only_shrink and cur_w <= max_w and cur_h <= max_h:
                         should_resize = False
 
-                    if should_resize:
+                    if should_resize and max_w > 0 and max_h > 0:
                         img.thumbnail((max_w, max_h), PILImage.Resampling.LANCZOS)
 
                 save_kwargs = {}

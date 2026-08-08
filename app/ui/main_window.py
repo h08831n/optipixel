@@ -164,6 +164,9 @@ class MainWindow(QMainWindow):
         self.completed_job_files += 1
 
         curr_page = self.stack.currentWidget()
+        if hasattr(curr_page, "file_list"):
+            curr_page.file_list.update_result(result)
+
         if hasattr(curr_page, "progress_widget"):
             curr_page.progress_widget.update_progress(
                 current=self.completed_job_files,
@@ -244,5 +247,11 @@ class MainWindow(QMainWindow):
             f"{tr('stats.failed', 'Failed')}: {len(failed)}\n\n"
             f"{tr('stats.saved', 'Total Space Saved')}: {format_size(saved_bytes)}"
         )
+
+        if failed:
+            fail_details = "\n".join([f"• {r.source_path.name}: {r.message}" for r in failed[:5]])
+            if len(failed) > 5:
+                fail_details += f"\n...and {len(failed) - 5} more."
+            msg_body += f"\n\n{tr('dialog.fail_details', 'Failure details')}:\n{fail_details}"
 
         QMessageBox.information(self, msg_title, msg_body)

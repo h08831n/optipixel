@@ -132,7 +132,7 @@ class ImageProcessor:
                 output_format=actual_target_fmt,
                 width=image_info.width,
                 height=image_info.height,
-                status="skipped" if "Skipped" in msg else "failed",
+                status="skipped" if "skipped" in msg.lower() else "failed",
                 message=msg,
                 duration_seconds=time.time() - start_time
             )

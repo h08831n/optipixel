@@ -34,5 +34,19 @@
   "stats.failed": "Failed",
   "stats.original_size": "Original Size",
   "stats.final_size": "Final Size",
-  "stats.saved": "Space Saved"
+  "stats.saved": "Space Saved",
+  "header.filename": "Filename",
+  "header.path": "Path",
+  "header.dimensions": "Dimensions",
+  "header.size": "Size",
+  "header.format": "Format",
+  "header.status": "Status",
+  "status.pending": "Pending",
+  "status.optimized": "Optimized",
+  "status.converted": "Converted",
+  "status.skipped": "Skipped",
+  "status.failed": "Failed",
+  "dialog.complete_title": "Job Complete",
+  "dialog.complete_body": "Batch processing completed in",
+  "dialog.fail_details": "Failure details"
 }

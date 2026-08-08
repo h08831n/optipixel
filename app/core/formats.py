@@ -2,6 +2,7 @@ from enum import Enum, auto
 from typing import Dict, List, Optional
 
 class ImageFormat(Enum):
+    ORIGINAL = "ORIGINAL"
     WEBP = "WEBP"
     AVIF = "AVIF"
     JPEG = "JPEG"
@@ -17,8 +18,12 @@ class ImageFormat(Enum):
     def from_extension(cls, ext: str) -> 'ImageFormat':
         ext = ext.lower().lstrip('.')
         mapping = {
+            'original': cls.ORIGINAL,
             'jpg': cls.JPEG,
             'jpeg': cls.JPEG,
+            'jfif': cls.JPEG,
+            'pjpeg': cls.JPEG,
+            'pjp': cls.JPEG,
             'png': cls.PNG,
             'webp': cls.WEBP,
             'avif': cls.AVIF,
@@ -34,6 +39,7 @@ class ImageFormat(Enum):
 
     def to_extension(self) -> str:
         ext_map = {
+            ImageFormat.ORIGINAL: "",
             ImageFormat.WEBP: ".webp",
             ImageFormat.AVIF: ".avif",
             ImageFormat.JPEG: ".jpg",
