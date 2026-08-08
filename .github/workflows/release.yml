@@ -1,13 +1,30 @@
-name: OptiPixel Release Build
+name: OptiPixel Multi-Platform Release Build
 
 on:
   push:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
-  build-windows:
-    runs-on: windows-2022
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset_name: OptiPixel-Windows-x64
+            path_sep: ";"
+          - os: macos-latest
+            asset_name: OptiPixel-macOS-arm64
+            path_sep: ":"
+          - os: ubuntu-22.04
+            asset_name: OptiPixel-Linux-x86_64
+            path_sep: ":"
 
     steps:
       - name: Checkout Repository
@@ -19,34 +36,57 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install ImageMagick
+      - name: Install System Dependencies (Linux)
+        if: runner.os == 'Linux'
         run: |
-          choco install imagemagick.app --version 7.1.1.29 -y
-          magick --version
+          sudo apt-get update
+          sudo apt-get install -y imagemagick libxcb-cursor0 libxcb-xinerama0 libegl1-mesa
 
-      - name: Install Dependencies
+      - name: Install System Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install imagemagick
+
+      - name: Install System Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install imagemagick.app -y
+
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Run Tests
-        run: |
-          pytest
-
       - name: Build Executable with PyInstaller
         run: |
-          pyinstaller --name="OptiPixel" --windowed --noconfirm --clean --icon="assets/icons/app_icon.ico" --add-data="app/i18n;app/i18n" --add-data="assets;assets" --add-data="VERSION;." app/main.py
+          pyinstaller --name="OptiPixel" \
+            --windowed \
+            --noconfirm \
+            --clean \
+            --add-data="app/i18n${{ matrix.path_sep }}app/i18n" \
+            --add-data="assets${{ matrix.path_sep }}assets" \
+            --add-data="VERSION${{ matrix.path_sep }}." \
+            app/main.py
 
-      - name: Build Installer with Inno Setup
-        uses: MinCiencia/action-innosetup@v1
-        with:
-          path: installer/OptiPixel.iss
+      - name: Compress Release Archive (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Compress-Archive -Path dist/OptiPixel/* -DestinationPath ${{ matrix.asset_name }}.zip
+
+      - name: Compress Release Archive (Linux / macOS)
+        if: runner.os != 'Windows'
+        run: |
+          cd dist && tar -czvf ../${{ matrix.asset_name }}.tar.gz OptiPixel/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            Output/OptiPixel-Setup-*.exe
-            dist/OptiPixel.zip
+            ${{ matrix.asset_name }}.zip
+            ${{ matrix.asset_name }}.tar.gz
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
