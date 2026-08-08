@@ -1,6 +1,7 @@
 name: OptiPixel Multi-Platform Release Build
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
