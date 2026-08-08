@@ -4,10 +4,33 @@ from typing import List, Dict, Any
 
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QListWidgetItem,
-    QStackedWidget, QStatusBar, QMessageBox, QApplication
+    QStackedWidget, QStatusBar, QMessageBox, QApplication, QGraphicsOpacityEffect
 )
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QPixmap
+
+class AnimatedStackedWidget(QStackedWidget):
+    def setCurrentIndex(self, index: int):
+        if index == self.currentIndex():
+            return
+
+        next_widget = self.widget(index)
+        if not next_widget:
+            super().setCurrentIndex(index)
+            return
+
+        effect = QGraphicsOpacityEffect(next_widget)
+        next_widget.setGraphicsEffect(effect)
+
+        super().setCurrentIndex(index)
+
+        self._anim = QPropertyAnimation(effect, b"opacity")
+        self._anim.setDuration(220)
+        self._anim.setStartValue(0.1)
+        self._anim.setEndValue(1.0)
+        self._anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self._anim.finished.connect(lambda: next_widget.setGraphicsEffect(None))
+        self._anim.start()
 
 from app.config.constants import APP_NAME, APP_TAGLINE
 from app.services.imagemagick_service import ImageMagickService
@@ -89,7 +112,7 @@ class MainWindow(QMainWindow):
         self.sidebar.currentRowChanged.connect(self.on_nav_changed)
 
         # Page Stack
-        self.stack = QStackedWidget()
+        self.stack = AnimatedStackedWidget()
 
         self.optimize_page = OptimizePage(self.im_service)
         self.optimize_page.start_processing_requested.connect(self.start_batch_job)
