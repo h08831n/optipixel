@@ -14,7 +14,12 @@ class FormatSelectorWidget(QWidget):
 
         self.combo = QComboBox()
         for fmt_str in ["WEBP", "AVIF", "JPEG", "PNG", "TIFF", "BMP", "ORIGINAL"]:
-            if fmt_str == "ORIGINAL" or supported_formats.get(fmt_str, True):
+            if fmt_str == "ORIGINAL" or supported_formats.get(fmt_str, False) or not supported_formats:
+                self.combo.addItem(fmt_str)
+        # Fallback if combo is empty
+        if self.combo.count() <= 1:
+            self.combo.clear()
+            for fmt_str in ["WEBP", "AVIF", "JPEG", "PNG", "TIFF", "BMP", "ORIGINAL"]:
                 self.combo.addItem(fmt_str)
 
         layout.addWidget(self.combo)

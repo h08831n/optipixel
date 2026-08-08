@@ -89,7 +89,18 @@ class ImageMagickService:
             "JPEG_XL": False
         }
         if not self.is_available():
-            return formats
+            # Standard formats natively supported by Pillow engine even without ImageMagick
+            return {
+                "WEBP": True,
+                "AVIF": True,
+                "HEIC": True,
+                "JPEG": True,
+                "PNG": True,
+                "TIFF": True,
+                "BMP": True,
+                "GIF": True,
+                "JPEG_XL": False
+            }
 
         try:
             res = subprocess.run([self.executable, "-list", "format"], capture_output=True, text=True, timeout=10)

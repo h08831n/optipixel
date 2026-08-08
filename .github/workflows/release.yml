@@ -66,19 +66,21 @@ jobs:
             --windowed \
             --noconfirm \
             --clean \
+            --icon="assets/icons/app_icon.ico" \
             --add-data="app/i18n${{ matrix.path_sep }}app/i18n" \
             --add-data="assets${{ matrix.path_sep }}assets" \
             --add-data="VERSION${{ matrix.path_sep }}." \
             app/main.py
 
-      - name: Compress Release Archive (Windows)
+      - name: Build Installer & Archive (Windows)
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          Compress-Archive -Path dist/OptiPixel/* -DestinationPath ${{ matrix.asset_name }}.zip
+          $ver = (Get-Content VERSION).Trim()
+          Compress-Archive -Path dist/OptiPixel/* -DestinationPath ${{ matrix.asset_name }}-Portable.zip
           choco install innosetup -y
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer/OptiPixel.iss
-          Move-Item -Path Output/OptiPixel-Setup-*.exe -Destination . -Force
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=$ver installer/OptiPixel.iss
+          Get-ChildItem Output/*.exe | Copy-Item -Destination .
 
       - name: Compress Release Archive (Linux / macOS)
         if: runner.os != 'Windows'
@@ -89,7 +91,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ matrix.asset_name }}.*
+            ${{ matrix.asset_name }}*
+            OptiPixel-Setup-*.exe
+            ${{ matrix.asset_name }}-Portable.zip
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

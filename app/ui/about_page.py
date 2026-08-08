@@ -43,8 +43,12 @@ class AboutPage(QWidget):
         self.btn_issues = QPushButton("Report Issue")
         self.btn_issues.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/h08831n/OptiPixel/issues")))
 
+        self.btn_update = QPushButton(tr("about.check_update", "Check for Updates"))
+        self.btn_update.clicked.connect(self.check_update)
+
         btn_box.addWidget(self.btn_github)
         btn_box.addWidget(self.btn_issues)
+        btn_box.addWidget(self.btn_update)
 
         # Donation Box
         donate_box = QFrame()
@@ -77,4 +81,41 @@ class AboutPage(QWidget):
         self.tagline.setText(tr("app.tagline", APP_TAGLINE))
         self.btn_github.setText(tr("about.github", "GitHub Repository"))
         self.btn_issues.setText(tr("about.issues", "Report Issue"))
+        self.btn_update.setText(tr("about.check_update", "Check for Updates"))
         self.lbl_donate_title.setText(tr("about.donate_title", "☕ Support Ongoing Development"))
+
+    def check_update(self):
+        from PySide6.QtWidgets import QMessageBox
+        from app.services.update_service import UpdateService
+
+        self.btn_update.setEnabled(False)
+        self.btn_update.setText(tr("about.checking", "Checking..."))
+
+        release_info = UpdateService().check_for_updates()
+
+        self.btn_update.setEnabled(True)
+        self.btn_update.setText(tr("about.check_update", "Check for Updates"))
+
+        if release_info and release_info.get("has_update"):
+            tag = release_info.get("tag_name", "New")
+            installer_url = release_info.get("installer_url", release_info.get("html_url"))
+
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle(tr("update.available_title", "Update Available"))
+            msg_box.setText(tr("update.available_msg", f"A new version (v{tag}) is available!\nWould you like to download the Installer?"))
+            btn_dl = msg_box.addButton(tr("update.download_installer", "Download Installer"), QMessageBox.ButtonRole.AcceptRole)
+            btn_page = msg_box.addButton(tr("update.view_release", "View Release Page"), QMessageBox.ButtonRole.ActionRole)
+            btn_close = msg_box.addButton(tr("button.cancel", "Cancel"), QMessageBox.ButtonRole.RejectRole)
+
+            msg_box.exec()
+
+            if msg_box.clickedButton() == btn_dl:
+                QDesktopServices.openUrl(QUrl(installer_url))
+            elif msg_box.clickedButton() == btn_page:
+                QDesktopServices.openUrl(QUrl(release_info.get("html_url")))
+        else:
+            QMessageBox.information(
+                self,
+                tr("update.up_to_date_title", "Up to Date"),
+                tr("update.up_to_date_msg", f"You are using the latest version of OptiPixel (v{APP_VERSION}).")
+            )

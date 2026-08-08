@@ -72,9 +72,22 @@ class MainWindow(QMainWindow):
         self.active_ftp_config: Optional[dict] = None
 
         # Set window icon
-        logo_path = Path(__file__).parent.parent.parent / "public" / "logo.svg"
-        if logo_path.exists():
-            self.setWindowIcon(QIcon(str(logo_path)))
+        import sys
+        if getattr(sys, 'frozen', False):
+            base_dir = Path(getattr(sys, '_MEIPASS', Path(__file__).parent.parent.parent))
+        else:
+            base_dir = Path(__file__).parent.parent.parent
+
+        icon_paths = [
+            base_dir / "assets" / "icons" / "app_icon.png",
+            base_dir / "assets" / "icons" / "app_icon.ico",
+            base_dir / "assets" / "logo.svg",
+            base_dir / "public" / "logo.svg"
+        ]
+        for ip in icon_paths:
+            if ip.exists():
+                self.setWindowIcon(QIcon(str(ip)))
+                break
 
         self.init_ui()
 

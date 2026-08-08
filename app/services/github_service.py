@@ -17,9 +17,18 @@ class GitHubService:
                 if response.status == 200:
                     data = json.loads(response.read().decode("utf-8"))
                     tag_name = data.get("tag_name", "").lstrip("v")
+                    html_url = data.get("html_url", "https://github.com/h08831n/OptiPixel")
+                    installer_url = None
+                    for asset in data.get("assets", []):
+                        name = asset.get("name", "")
+                        if "Setup" in name or name.endswith(".exe"):
+                            installer_url = asset.get("browser_download_url")
+                            break
+
                     return {
                         "tag_name": tag_name,
-                        "html_url": data.get("html_url", "https://github.com/h08831n/OptiPixel"),
+                        "html_url": html_url,
+                        "installer_url": installer_url or html_url,
                         "body": data.get("body", "No release notes available."),
                         "has_update": tag_name > APP_VERSION if tag_name else False
                     }
