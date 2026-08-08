@@ -5,7 +5,7 @@ APP_NAME = "OptiPixel"
 APP_TAGLINE = "Web Image Optimizer & Converter"
 APP_PUBLISHER = "Ahaninja"
 APP_WEBSITE = "https://ahaninja.com"
-APP_VERSION = "0.1.0"
+APP_VERSION = "1.0.0"
 
 SUPPORTED_INPUT_EXTENSIONS = {
     ".jpg", ".jpeg", ".png", ".webp", ".avif", ".heic", ".heif",

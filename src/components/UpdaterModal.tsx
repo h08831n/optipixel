@@ -36,7 +36,7 @@ export const UpdaterModal: React.FC<UpdaterModalProps> = ({
 
   if (!isOpen) return null;
 
-  const versionTag = releaseInfo?.tag_name || "0.2.0";
+  const versionTag = releaseInfo?.tag_name || "1.0.0";
   const notes = releaseInfo?.body || "Improved performance, IRANYekanX font integration, no console windows during processing, and in-app auto updates!";
 
   const handleStartUpdate = () => {
