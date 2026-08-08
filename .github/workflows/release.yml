@@ -76,6 +76,9 @@ jobs:
         shell: powershell
         run: |
           Compress-Archive -Path dist/OptiPixel/* -DestinationPath ${{ matrix.asset_name }}.zip
+          choco install innosetup -y
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer/OptiPixel.iss
+          Move-Item -Path Output/OptiPixel-Setup-*.exe -Destination . -Force
 
       - name: Compress Release Archive (Linux / macOS)
         if: runner.os != 'Windows'
