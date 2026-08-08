@@ -59,6 +59,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
+      - name: Generate Compatible Application Icons
+        run: |
+          python -c "
+          from PIL import Image
+          import os
+          os.makedirs('assets/icons', exist_ok=True)
+          png_path = 'assets/icons/app_icon_256.png'
+          if not os.path.exists(png_path):
+              png_path = 'assets/icons/app_icon.png'
+          if os.path.exists(png_path):
+              img = Image.open(png_path)
+              img.save('assets/icons/app_icon.ico', format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128)])
+              print('Generated PyInstaller-compliant app_icon.ico successfully')
+          "
+
       - name: Build Executable with PyInstaller
         shell: bash
         run: |
