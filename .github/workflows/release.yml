@@ -58,6 +58,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Build Executable with PyInstaller
+        shell: bash
         run: |
           pyinstaller --name="OptiPixel" \
             --windowed \
@@ -83,8 +84,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ matrix.asset_name }}.zip
-            ${{ matrix.asset_name }}.tar.gz
+            ${{ matrix.asset_name }}.*
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
