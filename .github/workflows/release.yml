@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
+        with:
+          lfs: true
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v6
@@ -62,16 +64,44 @@ jobs:
       - name: Generate Compatible Application Icons
         run: |
           python -c "
-          from PIL import Image
           import os
+          from PIL import Image, ImageDraw
+
           os.makedirs('assets/icons', exist_ok=True)
-          png_path = 'assets/icons/app_icon_256.png'
-          if not os.path.exists(png_path):
-              png_path = 'assets/icons/app_icon.png'
-          if os.path.exists(png_path):
-              img = Image.open(png_path)
-              img.save('assets/icons/app_icon.ico', format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128)])
-              print('Generated PyInstaller-compliant app_icon.ico successfully')
+          ico_path = 'assets/icons/app_icon.ico'
+
+          candidates = [
+              'assets/icons/app_icon_256.png',
+              'assets/icons/app_icon.png',
+              'assets/icons/icon_256.png',
+              'assets/logo.png',
+          ]
+
+          img = None
+          for path in candidates:
+              if os.path.exists(path):
+                  try:
+                      with Image.open(path) as test_img:
+                          test_img.verify()
+                      loaded = Image.open(path).convert('RGBA')
+                      img = loaded
+                      print(f'Successfully loaded icon from {path}')
+                      break
+                  except Exception as e:
+                      print(f'Skipping {path} (invalid or LFS pointer): {e}')
+
+          if img is None:
+              print('Generating fallback vector/bitmap icon...')
+              img = Image.new('RGBA', (256, 256), (0, 0, 0, 0))
+              draw = ImageDraw.Draw(img)
+              draw.rounded_rectangle([16, 16, 240, 240], radius=48, fill=(41, 128, 185, 255))
+              draw.rectangle([64, 64, 116, 116], fill=(255, 255, 255, 240))
+              draw.rectangle([140, 64, 192, 116], fill=(255, 255, 255, 240))
+              draw.rectangle([64, 140, 116, 192], fill=(255, 255, 255, 240))
+              draw.rectangle([140, 140, 192, 192], fill=(52, 152, 219, 255))
+
+          img.save(ico_path, format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128)])
+          print('Successfully generated app_icon.ico')
           "
 
       - name: Build Executable with PyInstaller
