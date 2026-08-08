@@ -3,7 +3,7 @@ from typing import List, Dict, Any, Optional
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog,
-    QCheckBox, QSpinBox, QComboBox, QGroupBox, QSplitter
+    QCheckBox, QSpinBox, QComboBox, QGroupBox, QSplitter, QMessageBox
 )
 from PySide6.QtCore import Qt, Signal
 
@@ -171,6 +171,7 @@ class OptimizePage(QWidget):
 
         self.drop_zone = DropZoneWidget()
         self.drop_zone.files_dropped.connect(self.handle_paths_imported)
+        self.drop_zone.clicked.connect(self.select_files)
 
         self.file_list = FileListWidget()
 
@@ -289,6 +290,28 @@ class OptimizePage(QWidget):
         if not self.scanned_images:
             return
 
+        target_images = self.scanned_images
+        if self.file_list.has_processed_files():
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle(tr("dialog.reprocess_title", "Already Processed Files"))
+            msg_box.setText(tr("dialog.reprocess_msg", "Some files in the list have already been processed. How would you like to proceed?"))
+            btn_skip = msg_box.addButton(tr("button.skip_completed", "Skip Completed"), QMessageBox.ButtonRole.AcceptRole)
+            btn_reprocess = msg_box.addButton(tr("button.reprocess_all", "Re-process All"), QMessageBox.ButtonRole.ActionRole)
+            btn_cancel = msg_box.addButton(tr("button.cancel", "Cancel"), QMessageBox.ButtonRole.RejectRole)
+            msg_box.setDefaultButton(btn_skip)
+            msg_box.exec()
+
+            clicked_btn = msg_box.clickedButton()
+            if clicked_btn == btn_cancel or clicked_btn is None:
+                return
+            elif clicked_btn == btn_skip:
+                target_images = [img for img in self.scanned_images if self.file_list.get_status(str(img.file_path)) not in ("optimized", "converted")]
+                if not target_images:
+                    return
+            else:
+                self.file_list.reset_all_statuses()
+                target_images = self.scanned_images
+
         mode = self.combo_mode.currentData()
         out_folder = self.output_folder_path
 
@@ -302,7 +325,7 @@ class OptimizePage(QWidget):
                 self.lbl_out_dir.setText(str(out_folder))
             else:
                 # Fallback automatically to an "optimized" folder next to the first image
-                first_parent = self.scanned_images[0].file_path.parent
+                first_parent = target_images[0].file_path.parent
                 out_folder = first_parent / "optimized"
                 out_folder.mkdir(parents=True, exist_ok=True)
                 self.output_folder_path = out_folder
@@ -310,15 +333,15 @@ class OptimizePage(QWidget):
 
         # Determine common parent folder for subfolder structure
         base_folder = None
-        if len(self.scanned_images) > 0:
-            parents = [img.file_path.parent for img in self.scanned_images]
+        if len(target_images) > 0:
+            parents = [img.file_path.parent for img in target_images]
             try:
                 base_folder = Path(Path.commonpath(parents))
             except Exception:
                 base_folder = parents[0]
 
         job_config = {
-            "images": self.scanned_images,
+            "images": target_images,
             "target_format": self.fmt_selector.current_format(),
             "settings": {
                 "quality": self.quality_ctrl.value(),

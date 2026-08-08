@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QSplitter
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QSplitter, QMessageBox
 )
 from PySide6.QtCore import Signal, Qt
 
@@ -73,6 +73,7 @@ class ConvertPage(QWidget):
 
         self.drop_zone = DropZoneWidget()
         self.drop_zone.files_dropped.connect(self.handle_paths_imported)
+        self.drop_zone.clicked.connect(self.select_files)
 
         self.file_list = FileListWidget()
 
@@ -134,12 +135,34 @@ class ConvertPage(QWidget):
         if not self.scanned_images:
             return
 
-        first_parent = self.scanned_images[0].file_path.parent
+        target_images = self.scanned_images
+        if self.file_list.has_processed_files():
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle(tr("dialog.reprocess_title", "Already Processed Files"))
+            msg_box.setText(tr("dialog.reprocess_msg", "Some files in the list have already been processed. How would you like to proceed?"))
+            btn_skip = msg_box.addButton(tr("button.skip_completed", "Skip Completed"), QMessageBox.ButtonRole.AcceptRole)
+            btn_reprocess = msg_box.addButton(tr("button.reprocess_all", "Re-process All"), QMessageBox.ButtonRole.ActionRole)
+            btn_cancel = msg_box.addButton(tr("button.cancel", "Cancel"), QMessageBox.ButtonRole.RejectRole)
+            msg_box.setDefaultButton(btn_skip)
+            msg_box.exec()
+
+            clicked_btn = msg_box.clickedButton()
+            if clicked_btn == btn_cancel or clicked_btn is None:
+                return
+            elif clicked_btn == btn_skip:
+                target_images = [img for img in self.scanned_images if self.file_list.get_status(str(img.file_path)) not in ("optimized", "converted")]
+                if not target_images:
+                    return
+            else:
+                self.file_list.reset_all_statuses()
+                target_images = self.scanned_images
+
+        first_parent = target_images[0].file_path.parent
         out_folder = first_parent / "converted"
         out_folder.mkdir(parents=True, exist_ok=True)
 
         job_config = {
-            "images": self.scanned_images,
+            "images": target_images,
             "target_format": self.fmt_selector.current_format(),
             "settings": {
                 "quality": self.quality_ctrl.value(),

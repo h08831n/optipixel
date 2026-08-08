@@ -46,7 +46,12 @@
   "status.converted": "Converted",
   "status.skipped": "Skipped",
   "status.failed": "Failed",
+  "dropzone.title": "Drag & Drop Images or Folders Here, or Click to Browse",
   "dialog.complete_title": "Job Complete",
   "dialog.complete_body": "Batch processing completed in",
-  "dialog.fail_details": "Failure details"
+  "dialog.fail_details": "Failure details",
+  "dialog.reprocess_title": "Already Processed Files",
+  "dialog.reprocess_msg": "Some files in the list have already been processed. How would you like to proceed?",
+  "button.reprocess_all": "Re-process All",
+  "button.skip_completed": "Skip Completed"
 }
