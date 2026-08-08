@@ -6,9 +6,10 @@ import { Logo } from "./Logo";
 
 interface AboutPageProps {
   lang: LanguageCode;
+  onOpenUpdateModal?: () => void;
 }
 
-export const AboutPage: React.FC<AboutPageProps> = ({ lang }) => {
+export const AboutPage: React.FC<AboutPageProps> = ({ lang, onOpenUpdateModal }) => {
   const t: TranslationSchema = translations[lang] || translations.en;
   const [copied, setCopied] = useState(false);
   const [latestRelease, setLatestRelease] = useState<any>(null);
@@ -139,21 +140,21 @@ export const AboutPage: React.FC<AboutPageProps> = ({ lang }) => {
 
         {/* Latest Release info if available */}
         {latestRelease ? (
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-2">
-            <div className="flex items-center justify-between">
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center space-x-1.5 rtl:space-x-reverse">
                 <Sparkles className="w-4 h-4" />
                 <span>Latest GitHub Release: {latestRelease.tag_name}</span>
               </span>
-              <a
-                href={latestRelease.html_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center space-x-1"
-              >
-                <span>View Release</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              {onOpenUpdateModal && (
+                <button
+                  onClick={onOpenUpdateModal}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg transition-all shadow-sm flex items-center justify-center space-x-1.5 rtl:space-x-reverse"
+                >
+                  <Sparkles className="w-3.5 h-3.5 animate-bounce" />
+                  <span>{lang === "fa" || lang === "ar" ? "بروزرسانی مستقیم داخل برنامه" : "In-App Direct Auto Update"}</span>
+                </button>
+              )}
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{latestRelease.body || "No changelog notes provided."}</p>
           </div>

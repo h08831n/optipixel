@@ -21,8 +21,9 @@ def main():
     app.setApplicationName("OptiPixel")
     app.setOrganizationName("Ahaninja")
 
-    # Set base font to prevent QFont::setPointSize warning
-    default_font = QFont("Segoe UI", 10)
+    # Set base font to IRANYekanX
+    default_font = QFont("IRANYekanX", 10)
+    default_font.setFamilies(["IRANYekanX", "IRANYekan", "Vazirmatn", "Segoe UI", "Tahoma"])
     app.setFont(default_font)
 
     window = MainWindow()

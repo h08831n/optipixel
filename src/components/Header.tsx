@@ -11,6 +11,7 @@ interface HeaderProps {
   setLang: (lang: LanguageCode) => void;
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
+  onOpenUpdateModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -19,7 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
   lang,
   setLang,
   darkMode,
-  setDarkMode
+  setDarkMode,
+  onOpenUpdateModal
 }) => {
   const t: TranslationSchema = translations[lang] || translations.en;
 
@@ -43,6 +45,18 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center space-x-2 rtl:space-x-reverse">
                 <span className="font-extrabold text-lg tracking-tight text-white">{t.appName}</span>
                 <span className="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded">v0.1.0</span>
+                {onOpenUpdateModal && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenUpdateModal();
+                    }}
+                    className="flex items-center space-x-1 rtl:space-x-reverse text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 px-2 py-0.5 rounded-full transition-all animate-pulse"
+                  >
+                    <span>⚡ v0.2.0</span>
+                    <span className="hidden sm:inline">{lang === "fa" || lang === "ar" ? "بروزرسانی" : "Update"}</span>
+                  </button>
+                )}
               </div>
               <p className="text-[11px] text-slate-400 hidden sm:block">{t.tagline}</p>
             </div>

@@ -12,12 +12,23 @@ class FileListWidget(QTableWidget):
     def __init__(self, parent=None):
         super().__init__(0, 6, parent)
         self.retranslate_headers()
+        self.setShowGrid(True)
+        self.setAlternatingRowColors(True)
+        self.verticalHeader().setVisible(True)
+        self.verticalHeader().setDefaultSectionSize(36)
+        
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
+        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Interactive)
+        self.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Interactive)
+        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Interactive)
+        
+        self.setColumnWidth(0, 200)
+        self.setColumnWidth(2, 110)
+        self.setColumnWidth(3, 170)
+        self.setColumnWidth(4, 90)
+        self.setColumnWidth(5, 120)
         self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
 
     def retranslate_headers(self):
@@ -34,12 +45,26 @@ class FileListWidget(QTableWidget):
         row = self.rowCount()
         self.insertRow(row)
 
-        self.setItem(row, 0, QTableWidgetItem(info.file_path.name))
-        self.setItem(row, 1, QTableWidgetItem(str(info.file_path)))
-        dim_str = f"{info.width}x{info.height}" if info.width else "Unknown"
-        self.setItem(row, 2, QTableWidgetItem(dim_str))
-        self.setItem(row, 3, QTableWidgetItem(format_size(info.file_size_bytes)))
-        self.setItem(row, 4, QTableWidgetItem(info.format.value))
+        name_item = QTableWidgetItem(info.file_path.name)
+        name_item.setToolTip(info.file_path.name)
+        self.setItem(row, 0, name_item)
+
+        path_item = QTableWidgetItem(str(info.file_path))
+        path_item.setToolTip(str(info.file_path))
+        self.setItem(row, 1, path_item)
+
+        dim_str = f"{info.width}x{info.height}" if info.width else "Auto"
+        dim_item = QTableWidgetItem(dim_str)
+        dim_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setItem(row, 2, dim_item)
+
+        size_item = QTableWidgetItem(format_size(info.file_size_bytes))
+        size_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setItem(row, 3, size_item)
+
+        fmt_item = QTableWidgetItem(info.format.value)
+        fmt_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setItem(row, 4, fmt_item)
 
         status_item = QTableWidgetItem(f"⏳ {tr('status.pending', 'Pending')}")
         status_item.setData(Qt.ItemDataRole.UserRole, str(info.file_path))
@@ -91,17 +116,17 @@ class FileListWidget(QTableWidget):
         item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
         if status in ("optimized", "converted"):
-            item.setBackground(QColor("#DCFCE7"))  # Light Green background
-            item.setForeground(QColor("#15803D"))  # Dark Green text
+            item.setBackground(QColor(22, 101, 52, 180))
+            item.setForeground(QColor("#86EFAC"))
         elif status == "failed":
-            item.setBackground(QColor("#FEE2E2"))  # Light Red background
-            item.setForeground(QColor("#B91C1C"))  # Dark Red text
+            item.setBackground(QColor(153, 27, 27, 180))
+            item.setForeground(QColor("#FCA5A5"))
         elif status == "skipped":
-            item.setBackground(QColor("#FEF3C7"))  # Light Amber background
-            item.setForeground(QColor("#B45309"))  # Dark Amber text
+            item.setBackground(QColor(146, 64, 14, 180))
+            item.setForeground(QColor("#FDE047"))
         else:  # pending
-            item.setBackground(QColor("#EFF6FF"))  # Light Blue background
-            item.setForeground(QColor("#1D4ED8"))  # Dark Blue text
+            item.setBackground(QColor(30, 58, 138, 180))
+            item.setForeground(QColor("#93C5FD"))
 
     def get_status(self, file_path_str: str) -> str:
         for row in range(self.rowCount()):

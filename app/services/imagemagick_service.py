@@ -2,9 +2,16 @@ import subprocess
 import shutil
 import os
 import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from app.core.exceptions import ImageMagickNotFoundError
+
+def _subproc_kwargs() -> dict:
+    kwargs = {}
+    if sys.platform == "win32" or os.name == "nt":
+        kwargs["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+    return kwargs
 
 class ImageMagickService:
     def __init__(self, custom_path: Optional[str] = None):
@@ -19,10 +26,10 @@ class ImageMagickService:
         if os.name == "nt" and "system32" in exe.lower() and "convert.exe" in exe.lower():
             return False
         try:
-            res = subprocess.run([exe, "-version"], capture_output=True, text=True, timeout=3)
+            res = subprocess.run([exe, "-version"], capture_output=True, text=True, timeout=3, **_subproc_kwargs())
             if res.returncode == 0 and "imagemagick" in res.stdout.lower():
                 return True
-            res2 = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=3)
+            res2 = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=3, **_subproc_kwargs())
             if res2.returncode == 0 and "imagemagick" in res2.stdout.lower():
                 return True
         except Exception:
@@ -68,7 +75,7 @@ class ImageMagickService:
         if not self.executable:
             return "Not Installed"
         try:
-            res = subprocess.run([self.executable, "--version"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run([self.executable, "--version"], capture_output=True, text=True, timeout=5, **_subproc_kwargs())
             if res.returncode == 0:
                 first_line = res.stdout.splitlines()[0] if res.stdout else ""
                 return first_line
@@ -103,7 +110,7 @@ class ImageMagickService:
             }
 
         try:
-            res = subprocess.run([self.executable, "-list", "format"], capture_output=True, text=True, timeout=10)
+            res = subprocess.run([self.executable, "-list", "format"], capture_output=True, text=True, timeout=10, **_subproc_kwargs())
             output = res.stdout.upper() if res.returncode == 0 else ""
             
             formats["WEBP"] = "WEBP" in output
@@ -131,7 +138,7 @@ class ImageMagickService:
 
         cmd = [self.executable] + args
         try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, **_subproc_kwargs())
             return res.returncode == 0, res.stdout, res.stderr
         except subprocess.TimeoutExpired:
             return False, "", f"Operation timed out after {timeout} seconds"

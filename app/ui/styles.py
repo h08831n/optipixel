@@ -7,7 +7,7 @@ QMainWindow, QDialog {
 }
 
 QWidget {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Vazirmatn", sans-serif;
+    font-family: "IRANYekanX", "IRANYekan", "IRANYekanXVF", "Vazirmatn", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 13px;
     color: #F8FAFC;
 }
@@ -302,7 +302,7 @@ QMainWindow, QDialog {
 }
 
 QWidget {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Vazirmatn", sans-serif;
+    font-family: "IRANYekanX", "IRANYekan", "IRANYekanXVF", "Vazirmatn", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 13px;
     color: #0F172A;
 }

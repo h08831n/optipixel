@@ -163,6 +163,51 @@ class MainWindow(QMainWindow):
 
         # Status Bar
         self.statusBar().showMessage(f"ImageMagick: {self.im_service.version_info}")
+        
+        # Background Update Check
+        self.check_updates_async()
+
+    def check_updates_async(self):
+        from PySide6.QtCore import QThread, Signal
+        from app.services.update_service import UpdateService
+
+        class UpdateCheckThread(QThread):
+            update_found = Signal(dict)
+
+            def run(self):
+                try:
+                    rel = UpdateService().check_for_updates()
+                    if rel and rel.get("has_update"):
+                        self.update_found.emit(rel)
+                except Exception:
+                    pass
+
+        self._upd_thread = UpdateCheckThread(self)
+        self._upd_thread.update_found.connect(self.on_update_found_on_launch)
+        self._upd_thread.start()
+
+    @Slot(dict)
+    def on_update_found_on_launch(self, release_info: dict):
+        from PySide6.QtWidgets import QPushButton
+        from app.ui.updater_dialog import UpdaterDialog
+
+        tag = release_info.get("tag_name", "0.0.0")
+        upd_btn = QPushButton(f"⚡ {tr('update.available', 'Update Available')}: v{tag} [{tr('update.install_now', 'Update Now')}]")
+        upd_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #10B981;
+                color: #FFFFFF;
+                font-weight: bold;
+                border-radius: 6px;
+                padding: 4px 12px;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background-color: #059669;
+            }
+        """)
+        upd_btn.clicked.connect(lambda: UpdaterDialog(release_info, parent=self).exec())
+        self.statusBar().addPermanentWidget(upd_btn)
 
     def apply_theme(self, theme_name: str):
         if theme_name.lower() == "light":

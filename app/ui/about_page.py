@@ -87,6 +87,7 @@ class AboutPage(QWidget):
     def check_update(self):
         from PySide6.QtWidgets import QMessageBox
         from app.services.update_service import UpdateService
+        from app.ui.updater_dialog import UpdaterDialog
 
         self.btn_update.setEnabled(False)
         self.btn_update.setText(tr("about.checking", "Checking..."))
@@ -97,22 +98,8 @@ class AboutPage(QWidget):
         self.btn_update.setText(tr("about.check_update", "Check for Updates"))
 
         if release_info and release_info.get("has_update"):
-            tag = release_info.get("tag_name", "New")
-            installer_url = release_info.get("installer_url", release_info.get("html_url"))
-
-            msg_box = QMessageBox(self)
-            msg_box.setWindowTitle(tr("update.available_title", "Update Available"))
-            msg_box.setText(tr("update.available_msg", f"A new version (v{tag}) is available!\nWould you like to download the Installer?"))
-            btn_dl = msg_box.addButton(tr("update.download_installer", "Download Installer"), QMessageBox.ButtonRole.AcceptRole)
-            btn_page = msg_box.addButton(tr("update.view_release", "View Release Page"), QMessageBox.ButtonRole.ActionRole)
-            btn_close = msg_box.addButton(tr("button.cancel", "Cancel"), QMessageBox.ButtonRole.RejectRole)
-
-            msg_box.exec()
-
-            if msg_box.clickedButton() == btn_dl:
-                QDesktopServices.openUrl(QUrl(installer_url))
-            elif msg_box.clickedButton() == btn_page:
-                QDesktopServices.openUrl(QUrl(release_info.get("html_url")))
+            dialog = UpdaterDialog(release_info, parent=self)
+            dialog.exec()
         else:
             QMessageBox.information(
                 self,
