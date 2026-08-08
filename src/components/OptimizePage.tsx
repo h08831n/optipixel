@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { ImageItem, ProcessingSettings, TargetFormat, OutputMode, LanguageCode } from "../types";
 import { TranslationSchema, translations } from "../i18n";
 import { StatsCards } from "./StatsCards";
@@ -74,65 +75,71 @@ export const OptimizePage: React.FC<OptimizePageProps> = ({ lang, onAddHistoryEn
     setIsProcessing(true);
     setProgress(0);
 
-    let completed = 0;
     const total = items.length;
 
-    const interval = setInterval(() => {
-      completed++;
-      const currentIdx = completed - 1;
-
-      setItems((prevItems) => {
-        const nextItems = [...prevItems];
-        const item = { ...nextItems[currentIdx] };
-
-        // 1. Threshold Check
-        const sizeKb = item.originalSizeBytes / 1024;
-        if (settings.thresholdEnabled && sizeKb <= settings.sizeThresholdKb) {
-          item.status = "skipped";
-          item.message = `Skipped: Size (${sizeKb.toFixed(1)} KB) <= ${settings.sizeThresholdKb} KB threshold`;
-          item.optimizedSizeBytes = item.originalSizeBytes;
-          nextItems[currentIdx] = item;
-          return nextItems;
-        }
-
-        // 2. Optimization logic simulation/canvas conversion
-        const actualFormat = settings.targetFormat === "ORIGINAL" ? item.format : settings.targetFormat;
-        const compressionRatio = settings.quality < 80 ? 0.45 : settings.quality < 90 ? 0.60 : 0.75;
-        let optSize = Math.floor(item.originalSizeBytes * compressionRatio);
-
-        // 3. Keep original if output is larger
-        if (settings.keepOriginalIfLarger && optSize >= item.originalSizeBytes) {
-          item.status = "skipped";
-          item.message = "Skipped: Output size larger than original";
-          item.optimizedSizeBytes = item.originalSizeBytes;
-        } else {
-          item.status = actualFormat !== item.format ? "converted" : "optimized";
-          item.optimizedSizeBytes = optSize;
-          item.optimizedFormat = actualFormat as TargetFormat;
-          item.savedBytes = item.originalSizeBytes - optSize;
-          item.reductionPercentage = Number(((item.savedBytes / item.originalSizeBytes) * 100).toFixed(1));
-          item.message = `Successfully compressed to ${actualFormat}`;
-        }
-
-        nextItems[currentIdx] = item;
-        return nextItems;
-      });
-
-      setProgress(Math.round((completed / total) * 100));
-
-      if (completed >= total) {
-        clearInterval(interval);
+    const processNext = (idx: number) => {
+      if (idx >= total) {
         setIsProcessing(false);
+        setProgress(100);
 
-        // Record history
         onAddHistoryEntry({
           operation: "Batch Optimization",
           filesProcessed: total,
           savedBytes: items.reduce((acc, curr) => acc + (curr.savedBytes || 0), 0),
-          durationSeconds: (total * 0.3).toFixed(1)
+          durationSeconds: (total * 0.4).toFixed(1)
         });
+        return;
       }
-    }, 300);
+
+      // Step 1: Set status to "processing"
+      setItems((prevItems) => {
+        const nextItems = [...prevItems];
+        nextItems[idx] = { ...nextItems[idx], status: "processing", message: "Processing..." };
+        return nextItems;
+      });
+
+      // Step 2: Complete item after delay
+      setTimeout(() => {
+        setItems((prevItems) => {
+          const nextItems = [...prevItems];
+          const item = { ...nextItems[idx] };
+
+          const sizeKb = item.originalSizeBytes / 1024;
+          if (settings.thresholdEnabled && sizeKb <= settings.sizeThresholdKb) {
+            item.status = "skipped";
+            item.message = `Skipped: Size (${sizeKb.toFixed(1)} KB) <= ${settings.sizeThresholdKb} KB threshold`;
+            item.optimizedSizeBytes = item.originalSizeBytes;
+          } else {
+            const actualFormat = settings.targetFormat === "ORIGINAL" ? item.format : settings.targetFormat;
+            const compressionRatio = settings.quality < 80 ? 0.45 : settings.quality < 90 ? 0.60 : 0.75;
+            let optSize = Math.floor(item.originalSizeBytes * compressionRatio);
+
+            if (settings.keepOriginalIfLarger && optSize >= item.originalSizeBytes) {
+              item.status = "skipped";
+              item.message = "Skipped: Output size larger than original";
+              item.optimizedSizeBytes = item.originalSizeBytes;
+            } else {
+              item.status = actualFormat !== item.format ? "converted" : "optimized";
+              item.optimizedSizeBytes = optSize;
+              item.optimizedFormat = actualFormat as TargetFormat;
+              item.savedBytes = item.originalSizeBytes - optSize;
+              item.reductionPercentage = Number(((item.savedBytes / item.originalSizeBytes) * 100).toFixed(1));
+              item.message = `Successfully compressed to ${actualFormat}`;
+            }
+          }
+
+          nextItems[idx] = item;
+          return nextItems;
+        });
+
+        const completedCount = idx + 1;
+        setProgress(Math.round((completedCount / total) * 100));
+
+        setTimeout(() => processNext(idx + 1), 120);
+      }, 350);
+    };
+
+    processNext(0);
   };
 
   const exportCsv = () => {
@@ -426,63 +433,110 @@ export const OptimizePage: React.FC<OptimizePageProps> = ({ lang, onAddHistoryEn
               </div>
 
               <div className="divide-y divide-slate-100 dark:divide-slate-700/60 max-h-[480px] overflow-y-auto">
-                {items.map((item) => (
-                  <div key={item.id} className="p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all">
-                    <div className="flex items-center space-x-3 rtl:space-x-reverse min-w-0">
-                      {item.previewUrl ? (
-                        <img src={item.previewUrl} alt={item.name} className="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-700" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-500">
-                          {item.format}
-                        </div>
-                      )}
+                <AnimatePresence initial={false}>
+                  {items.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className={`p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors ${
+                        item.status === "processing" ? "bg-indigo-50/50 dark:bg-indigo-900/10" : ""
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 rtl:space-x-reverse min-w-0">
+                        {item.previewUrl ? (
+                          <img src={item.previewUrl} alt={item.name} className="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-700" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-500">
+                            {item.format}
+                          </div>
+                        )}
 
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.name}</div>
-                        <div className="text-[11px] text-slate-400 flex items-center space-x-2 rtl:space-x-reverse">
-                          <span>{formatBytes(item.originalSizeBytes)}</span>
-                          <span>•</span>
-                          <span>{item.width}×{item.height}</span>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.name}</div>
+                          <div className="text-[11px] text-slate-400 flex items-center space-x-2 rtl:space-x-reverse">
+                            <span>{formatBytes(item.originalSizeBytes)}</span>
+                            <span>•</span>
+                            <span>{item.width}×{item.height}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center space-x-3 rtl:space-x-reverse text-right rtl:text-left">
-                      {item.status === "pending" && (
-                        <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
-                          Pending
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-3 rtl:space-x-reverse text-right rtl:text-left">
+                        <AnimatePresence mode="wait">
+                          {item.status === "pending" && (
+                            <motion.span
+                              key="pending"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="text-[11px] font-semibold text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded"
+                            >
+                              Pending
+                            </motion.span>
+                          )}
 
-                      {item.status === "skipped" && (
-                        <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded flex items-center space-x-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          <span>Skipped</span>
-                        </span>
-                      )}
+                          {item.status === "processing" && (
+                            <motion.span
+                              key="processing"
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.8, opacity: 0 }}
+                              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded flex items-center space-x-1"
+                            >
+                              <RefreshCw className="w-3 h-3 animate-spin" />
+                              <span>Processing...</span>
+                            </motion.span>
+                          )}
 
-                      {(item.status === "optimized" || item.status === "converted") && (
-                        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                          <div className="text-right rtl:text-left">
-                            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                              {formatBytes(item.optimizedSizeBytes || 0)}
-                            </div>
-                            <div className="text-[10px] text-emerald-500 font-semibold">
-                              -{item.reductionPercentage}%
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setPreviewItem(item)}
-                            className="p-1 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
-                            title="Compare Before/After"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                          {item.status === "skipped" && (
+                            <motion.span
+                              key="skipped"
+                              initial={{ scale: 0.8, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.8, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded flex items-center space-x-1"
+                            >
+                              <AlertTriangle className="w-3 h-3" />
+                              <span>Skipped</span>
+                            </motion.span>
+                          )}
+
+                          {(item.status === "optimized" || item.status === "converted") && (
+                            <motion.div
+                              key="completed"
+                              initial={{ scale: 0.85, opacity: 0, y: -4 }}
+                              animate={{ scale: [1.12, 1], opacity: 1, y: 0 }}
+                              transition={{ type: "spring", stiffness: 450, damping: 22 }}
+                              className="flex items-center space-x-2 rtl:space-x-reverse"
+                            >
+                              <div className="text-right rtl:text-left">
+                                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 justify-end">
+                                  <CheckCircle className="w-3 h-3 text-emerald-500" />
+                                  <span>{formatBytes(item.optimizedSizeBytes || 0)}</span>
+                                </div>
+                                <div className="text-[10px] text-emerald-500 font-semibold">
+                                  -{item.reductionPercentage}%
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setPreviewItem(item)}
+                                className="p-1 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                title="Compare Before/After"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           )}
